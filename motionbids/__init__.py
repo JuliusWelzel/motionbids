@@ -35,7 +35,8 @@ __author__ = "Your Name"
 __email__ = "your.email@example.com"
 
 # Import main classes and functions
-from .datamodel import MotionData
+# Using dynamic schema-based MotionData class
+from .datamodel_dynamic import MotionData
 from .validator import (
     validate_motion_data,
     validate_bids_compliance,

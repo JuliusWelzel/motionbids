@@ -4,8 +4,8 @@ Tests for the validation module.
 import pytest
 import warnings
 import numpy as np
-from motion2bids.datamodel import MotionData
-from motion2bids.validator import (
+from motionbids.datamodel import MotionData
+from motionbids.validator import (
     validate_motion_data,
     validate_bids_compliance,
     ValidationError,

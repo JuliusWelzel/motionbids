@@ -3,7 +3,7 @@ Tests for the MotionData datamodel.
 """
 import pytest
 import numpy as np
-from motion2bids.datamodel import MotionData
+from motionbids.datamodel import MotionData
 
 
 def test_motion_data_creation_minimal():
