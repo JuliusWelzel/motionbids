@@ -5,7 +5,7 @@ This module generates the MotionData dataclass dynamically from the BIDS schema
 using bidsschematools, ensuring automatic synchronization with BIDS updates.
 """
 from dataclasses import dataclass, field, fields as dataclass_fields
-from typing import Optional, List, Dict, Any, get_type_hints
+from typing import Optional, List, Dict, Any
 import numpy as np
 from dataclasses_json import dataclass_json
 
@@ -60,7 +60,6 @@ def _create_motion_data_class():
     metadata_fields = get_motion_metadata_fields()
     required_schema = get_required_fields()
     recommended_schema = get_recommended_fields()
-    entities = get_motion_entities()
     
     # Build field definitions
     class_fields = {}

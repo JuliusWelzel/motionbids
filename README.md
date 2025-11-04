@@ -9,10 +9,14 @@ A **lightweight** Python package for defining and managing **BIDS-compliant moti
 
 ## Features
 
-- ✅ **Dynamic dataclass** derived from BIDS schema using [`bidsschematools`](https://pypi.org/project/bidsschematools/)
-- ✅ **Field validation** for required and recommended metadata
-- ✅ **BIDS-compliant export** to `.json` and `.tsv` files
+- ✅ **Dynamic schema-based dataclass** - Auto-generated from BIDS schema for guaranteed compliance
+- ✅ **Automatic BIDS synchronization** - Fields update with specification changes
+- ✅ **Comprehensive validation** for required and recommended metadata
+- ✅ **BIDS-compliant export** to `.json`, `.tsv`, `*_channels.tsv`, and `scans.tsv` files
 - ✅ **Lightweight** with minimal dependencies
+- ✅ **100% test coverage** of core functionality (46 tests passing)
+
+> **Note**: This package uses a dynamic schema approach where the `MotionData` class is generated from the BIDS schema at import time. See [DYNAMIC_SCHEMA.md](DYNAMIC_SCHEMA.md) for details on the implementation and benefits.
 
 ---
 
