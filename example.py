@@ -60,6 +60,7 @@ def main():
         tracksys="optical",
         sampling_frequency=sampling_freq,
         tracked_points_count=n_markers,
+        acq_time="2025-11-04T14:30:00",  # ISO 8601 format - triggers scans.tsv creation
         manufacturer="Vicon",
         manufacturers_model_name="Vantage V5",
         software_versions="Nexus 2.12",
@@ -152,10 +153,13 @@ def main():
     print(f"{bids_root}/")
     print(f"├── dataset_description.json")
     print(f"└── sub-01/")
+    if 'scans' in files:
+        print(f"    ├── sub-01_ses-01_scans.tsv")
     print(f"    └── ses-01/")
     print(f"        └── motion/")
-    for file_path in files.values():
-        print(f"            ├── {file_path.name}")
+    for file_type, file_path in files.items():
+        if file_type != 'scans':  # scans.tsv is shown above at subject level
+            print(f"            ├── {file_path.name}")
     print()
 
 

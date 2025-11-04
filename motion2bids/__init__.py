@@ -49,6 +49,7 @@ from .exporter import (
     export_json_metadata,
     export_tsv_data,
     export_channels_tsv,
+    export_scans_tsv,
     create_bids_directory_structure,
     export_dataset_description,
 )
@@ -79,6 +80,7 @@ __all__ = [
     "export_json_metadata",
     "export_tsv_data",
     "export_channels_tsv",
+    "export_scans_tsv",
     "create_bids_directory_structure",
     "export_dataset_description",
     

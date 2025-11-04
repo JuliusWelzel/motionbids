@@ -44,6 +44,9 @@ class MotionData:
         session_id: Session identifier (BIDS entity 'ses')
         acquisition: Acquisition label (BIDS entity 'acq')
         run: Run index (BIDS entity 'run')
+        acq_time: Acquisition time in ISO 8601 format with optional fractional seconds
+                  (e.g., '2023-06-15T14:30:00' or '2023-06-15T14:30:00.123456')
+                  Supports sub-millisecond precision. If provided, a scans.tsv file will be generated
         data: NumPy array containing motion time series data (shape: n_timepoints × n_channels)
         columns: List of column names for the TSV file (length must equal data.shape[1])
         units: Units for each column (length must equal len(columns))
@@ -82,6 +85,7 @@ class MotionData:
     session_id: Optional[str] = None
     acquisition: Optional[str] = None
     run: Optional[int] = None
+    acq_time: Optional[str] = None  # ISO 8601 with optional fractional seconds (e.g., '2023-06-15T14:30:00.123456')
     
     # Motion data
     data: Optional[np.ndarray] = field(default=None, repr=False)

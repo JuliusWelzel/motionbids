@@ -26,6 +26,8 @@ def export_bids_motion(
     This function writes:
     1. A JSON sidecar file with metadata
     2. A TSV file with motion time series data (if data is present)
+    3. A channels.tsv file (if units are specified)
+    4. A scans.tsv file (if acq_time is provided)
     
     Args:
         data: MotionData instance to export
@@ -39,7 +41,8 @@ def export_bids_motion(
         {
             'json': Path to JSON metadata file,
             'tsv': Path to TSV data file (if data was present),
-            'channels': Path to channels.tsv file (if applicable)
+            'channels': Path to channels.tsv file (if applicable),
+            'scans': Path to scans.tsv file (if acq_time was provided)
         }
     
     Raises:
@@ -103,6 +106,20 @@ def export_bids_motion(
         if data.units is not None:
             channels_path = export_channels_tsv(data, channels_path)
             created_files['channels'] = channels_path
+    
+    # Export scans.tsv if acq_time is provided
+    if data.acq_time is not None:
+        # scans.tsv goes in the subject (or session) directory, not motion subdirectory
+        if data.session_id:
+            scans_dir = out_dir.parent  # Go up from motion/ to ses-XX/
+            scans_filename = f"sub-{data.subject_id}_ses-{data.session_id}_scans.tsv"
+        else:
+            scans_dir = out_dir.parent  # Go up from motion/ to sub-XX/
+            scans_filename = f"sub-{data.subject_id}_scans.tsv"
+        
+        scans_path = scans_dir / scans_filename
+        scans_path = export_scans_tsv(data, scans_path)
+        created_files['scans'] = scans_path
     
     return created_files
 
@@ -212,6 +229,83 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
             component, tracked_point, channel_type = _parse_channel_name(col_name)
             
             f.write(f'{col_name}\t{component}\t{channel_type}\t{tracked_point}\t{unit}\n')
+    
+    return output_path
+
+
+def export_scans_tsv(
+    data: MotionData,
+    output_path: Union[str, Path],
+    relative_path: Optional[str] = None
+) -> Path:
+    """
+    Export scans.tsv file for tracking acquisition times.
+    
+    The scans.tsv file provides metadata about when each file was acquired.
+    This is created when acq_time is specified in the MotionData.
+    Supports sub-millisecond precision in ISO 8601 format.
+    
+    Args:
+        data: MotionData instance with acq_time field
+        output_path: Path where scans.tsv will be written
+        relative_path: Optional relative path to the motion file from subject/session directory.
+                       If None, it will be auto-generated from the data.
+    
+    Returns:
+        Path to the created scans.tsv file
+    
+    Reference:
+        https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files/data-summary-files.html#scans-file
+    
+    Example:
+        >>> motion = MotionData(subject_id="01", task_name="walk", 
+        ...                     acq_time="2023-06-15T14:30:00.123456", ...)
+        >>> export_scans_tsv(motion, "bids_root/sub-01/sub-01_scans.tsv")
+    """
+    output_path = Path(output_path)
+    
+    if data.acq_time is None:
+        raise ValueError("acq_time must be defined to export scans.tsv")
+    
+    # Generate relative path to motion file if not provided
+    if relative_path is None:
+        # Construct the relative path from the scans.tsv file location
+        # The path should be relative to where scans.tsv is stored
+        motion_filename = data.get_bids_filename(suffix="motion", extension="json")
+        # scans.tsv is always in subject or session directory
+        # So the path is always just motion/filename (never includes ses-XX/)
+        relative_path = f"motion/{motion_filename}"
+    
+    # Check if file exists - if so, append; otherwise create with header
+    file_exists = output_path.exists()
+    
+    if file_exists:
+        # Read existing file to check if this entry already exists
+        with open(output_path, 'r', encoding='utf-8') as f:
+            existing_lines = f.readlines()
+        
+        # Check if this filename already exists
+        entry_exists = any(relative_path in line for line in existing_lines[1:])  # Skip header
+        
+        if entry_exists:
+            # Update existing entry
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(existing_lines[0])  # Write header
+                for line in existing_lines[1:]:
+                    if relative_path in line:
+                        # Replace with new entry
+                        f.write(f'{relative_path}\t{data.acq_time}\n')
+                    else:
+                        f.write(line)
+        else:
+            # Append new entry
+            with open(output_path, 'a', encoding='utf-8') as f:
+                f.write(f'{relative_path}\t{data.acq_time}\n')
+    else:
+        # Create new file with header
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write('filename\tacq_time\n')
+            f.write(f'{relative_path}\t{data.acq_time}\n')
     
     return output_path
 
