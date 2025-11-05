@@ -5,7 +5,7 @@
 
 A **lightweight** Python package for defining and managing **BIDS-compliant motion data**. 
 
-`motion2bids` provides a simple, schema-driven interface to create, validate, and export motion data following the [Brain Imaging Data Structure (BIDS)](https://bids-specification.readthedocs.io/) standard.
+`motionbids` provides a simple, schema-driven interface to create, validate, and export motion data following the [Brain Imaging Data Structure (BIDS)](https://bids-specification.readthedocs.io/) standard.
 
 ## Features
 
@@ -25,20 +25,20 @@ A **lightweight** Python package for defining and managing **BIDS-compliant moti
 ### Using `uv` (recommended)
 
 ```bash
-uv pip install motion2bids
+uv pip install motionbids
 ```
 
 ### Using `pip`
 
 ```bash
-pip install motion2bids
+pip install motionbids
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/juliuswelzel/motion2bids.git
-cd motion2bids
+git clone https://github.com/juliuswelzel/motionbids.git
+cd motionbids
 uv pip install -e .
 ```
 
@@ -47,7 +47,7 @@ uv pip install -e .
 ## Quick Start
 
 ```python
-from motion2bids import MotionData, validate_motion_data, export_bids_motion
+from motionbids import MotionData, validate_motion_data, export_bids_motion
 import numpy as np
 
 # Create motion time series data
@@ -228,7 +228,7 @@ motion = MotionData(
 The package provides comprehensive validation for BIDS compliance:
 
 ```python
-from motion2bids import validate_motion_data
+from motionbids import validate_motion_data
 
 try:
     validate_motion_data(motion)
@@ -274,7 +274,7 @@ validate_motion_data(motion, strict=True)
 Export motion data to BIDS-compliant files:
 
 ```python
-from motion2bids import export_bids_motion
+from motionbids import export_bids_motion
 
 files = export_bids_motion(
     data=motion,
@@ -370,7 +370,7 @@ With all entities (note the order: tracksys comes before acq):
 Helper functions for organizing a complete BIDS dataset:
 
 ```python
-from motion2bids import (
+from motionbids import (
     MotionData, 
     create_bids_directory_structure, 
     export_dataset_description,
@@ -448,7 +448,7 @@ motion = MotionData(
 For advanced users, schema utilities are available:
 
 ```python
-from motion2bids import schema_utils
+from motionbids import schema_utils
 
 # Get required fields from BIDS schema
 required = schema_utils.get_required_fields()
@@ -468,8 +468,8 @@ metadata = schema_utils.get_motion_metadata_fields()
 
 ```bash
 # Clone repository
-git clone https://github.com/juliuswelzel/motion2bids.git
-cd motion2bids
+git clone https://github.com/juliuswelzel/motionbids.git
+cd motionbids
 
 # Install in development mode with dev dependencies
 uv pip install -e ".[dev]"
@@ -482,7 +482,7 @@ uv pip install -e ".[dev]"
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=motion2bids --cov-report=html
+uv run pytest --cov=motionbids --cov-report=html
 
 # Run specific test file
 uv run pytest tests/test_datamodel.py
@@ -516,8 +516,8 @@ uv pip install .
 ## Project Structure
 
 ```
-motion2bids/
-├── motion2bids/
+motionbids/
+├── motionbids/
 │   ├── __init__.py          # Public API
 │   ├── datamodel.py         # MotionData dataclass
 │   ├── validator.py         # Validation logic
@@ -564,14 +564,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Citation
 
-If you use `motion2bids` in your research, please cite:
+If you use `motionbids` in your research, please cite:
 
 ```bibtex
-@software{motion2bids,
+@software{motionbids,
   author = {Julius Welzel},
-  title = {motion2bids: Lightweight BIDS converter for motion capture data},
+  title = {motionbids: Lightweight BIDS converter for motion capture data},
   year = {2025},
-  url = {https://github.com/juliuswelzel/motion2bids}
+  url = {https://github.com/juliuswelzel/motionbids}
 }
 ```
 
@@ -579,8 +579,8 @@ If you use `motion2bids` in your research, please cite:
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/juliuswelzel/motion2bids/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/juliuswelzel/motion2bids/discussions)
+- **Issues**: [GitHub Issues](https://github.com/juliuswelzel/motionbids/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/juliuswelzel/motionbids/discussions)
 - **BIDS Specification**: [https://bids-specification.readthedocs.io/](https://bids-specification.readthedocs.io/)
 
 ---

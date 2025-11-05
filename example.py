@@ -1,5 +1,5 @@
 """
-Example usage of motion2bids package.
+Example usage of motionbids package.
 
 Demonstrates BIDS-compliant motion data export following the specification at:
 https://bids-specification.readthedocs.io/en/stable/modality-specific-files/motion.html
