@@ -5,7 +5,7 @@ This module provides functions to validate MotionData instances against
 BIDS requirements and recommendations.
 """
 import warnings
-from typing import List, Set
+from typing import List, Set, Tuple
 from .datamodel import MotionData
 
 
@@ -214,6 +214,9 @@ def validate_field_values(data: MotionData) -> List[str]:
                     f"sampling_frequency ({data.sampling_frequency}Hz). "
                     f"Expected ~{expected_samples} samples."
                 )
+    
+    # Note: Channel metadata validation is performed in MotionData.__post_init__
+    # during construction, so we don't need to validate it here again
     
     return errors
 

@@ -37,6 +37,11 @@ columns = [f"marker{i}_{axis}"
            for i in range(n_markers) 
            for axis in ['x', 'y', 'z']]
 units = ["mm"] * n_channels
+
+# Define channel metadata (REQUIRED for BIDS compliance)
+channel_component = [axis for i in range(n_markers) for axis in ['x', 'y', 'z']]
+channel_type = ['POS'] * n_channels
+channel_tracked_point = [f'marker{i}' for i in range(n_markers) for _ in range(3)]
 ```
 
 ### Step 2: Create MotionData Object
@@ -64,7 +69,12 @@ motion = MotionData(
     # Data arrays
     data=data,
     columns=columns,
-    units=units
+    units=units,
+    
+    # Channel metadata (REQUIRED for channels.tsv)
+    channel_component=channel_component,
+    channel_type=channel_type,
+    channel_tracked_point=channel_tracked_point
 )
 ```
 
@@ -135,6 +145,9 @@ for subject_id in ["01", "02", "03"]:
             data=data,
             columns=columns,
             units=units,
+            channel_component=channel_component,
+            channel_type=channel_type,
+            channel_tracked_point=channel_tracked_point,
             acq_time=get_timestamp(subject_id, session_id)  # Your function
         )
         
@@ -220,7 +233,10 @@ for run_num in [1, 2, 3]:
         tracked_points_count=10,
         data=load_run(run_num),
         columns=columns,
-        units=units
+        units=units,
+        channel_component=channel_component,
+        channel_type=channel_type,
+        channel_tracked_point=channel_tracked_point
     )
     export_bids_motion(motion, out_dir=motion_dir)
 ```
@@ -234,6 +250,12 @@ df = pd.read_csv("motion_capture.csv")
 data = df.values  # Convert to NumPy array
 columns = df.columns.tolist()
 
+# Define channel metadata based on your data structure
+n_markers = 10
+channel_component = [axis for i in range(n_markers) for axis in ['x', 'y', 'z']]
+channel_type = ['POS'] * len(columns)
+channel_tracked_point = [f'marker{i}' for i in range(n_markers) for _ in range(3)]
+
 motion = MotionData(
     subject_id="01",
     task_name="walk",
@@ -242,7 +264,10 @@ motion = MotionData(
     tracked_points_count=10,
     data=data,
     columns=columns,
-    units=["mm"] * len(columns)
+    units=["mm"] * len(columns),
+    channel_component=channel_component,
+    channel_type=channel_type,
+    channel_tracked_point=channel_tracked_point
 )
 ```
 
@@ -293,28 +318,15 @@ except ValidationError as e:
 - ✅ Array dimensions match (`data.shape[1] == len(columns)`)
 - ✅ Units match columns (`len(units) == len(columns)`)
 
-#### Channel Validation
-- ✅ All required channel fields present: `name`, `component`, `type`, `tracked_point`, `units`
-- ✅ Channel `component` values validated against BIDS schema
-- ✅ Channel `type` values validated against BIDS schema (uppercase required)
-- ✅ Channel names parseable to extract component and tracked point information
+#### Channel Information
+- ✅ Channel metadata validated against BIDS schema during construction
+- ✅ All three channel metadata fields required together: `channel_component`, `channel_type`, `channel_tracked_point`
+- ✅ Component values validated: `x`, `y`, `z`, `quat_x`, `quat_y`, `quat_z`, `quat_w`, `n/a`
+- ✅ Type values validated (uppercase): `POS`, `ORNT`, `VEL`, `ACCEL`, `GYRO`, `ANGACCEL`, `MAGN`, `JNTANG`, `LATENCY`, `MISC`
+- ✅ Component-type compatibility checked (e.g., quaternion components only allowed with `ORNT` type)
 
-**Allowed channel types** (from BIDS schema):
-- `POS` - Position in space (requires component: x, y, or z)
-- `ORNT` - Orientation (requires component: x, y, z, quat_x, quat_y, quat_z, or quat_w)
-- `VEL` - Velocity (requires component: x, y, or z)
-- `ACCEL` - Accelerometer (requires component: x, y, or z)
-- `GYRO` - Gyrometer (requires component: x, y, or z)
-- `ANGACCEL` - Angular acceleration (requires component: x, y, or z)
-- `MAGN` - Magnetic field strength (requires component: x, y, or z)
-- `JNTANG` - Joint angle between bodyparts
-- `LATENCY` - Sample latency from recording onset
-- `MISC` - Miscellaneous channels
-
-**Allowed channel components** (from BIDS schema):
-- Spatial axes: `x`, `y`, `z`
-- Quaternions: `quat_x`, `quat_y`, `quat_z`, `quat_w`
-- No axis: `n/a`
+!!! info "Channel Metadata Required"
+    You **must** provide explicit channel metadata (`channel_component`, `channel_type`, `channel_tracked_point`) when creating a MotionData object with data. These are validated during construction to ensure BIDS compliance. All three fields must be provided together and match the length of your `columns` list.
 
 ### Official BIDS Validation
 

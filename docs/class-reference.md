@@ -8,6 +8,10 @@ The `MotionData` class is the core of motionbids, representing a single motion c
 from motionbids import MotionData
 import numpy as np
 
+# Example: 10 markers, each with x, y, z components
+n_markers = 10
+n_channels = n_markers * 3
+
 motion = MotionData(
     # Required fields
     subject_id="01",
@@ -17,9 +21,14 @@ motion = MotionData(
     tracked_points_count=10,
     
     # Data arrays
-    data=np.random.randn(1200, 30),
-    columns=[f"marker{i}_{axis}" for i in range(10) for axis in ['x','y','z']],
-    units=["mm"] * 30
+    data=np.random.randn(1200, n_channels),
+    columns=[f"marker{i}_{axis}" for i in range(n_markers) for axis in ['x','y','z']],
+    units=["mm"] * n_channels,
+    
+    # Channel metadata (REQUIRED for BIDS compliance)
+    channel_component=[axis for i in range(n_markers) for axis in ['x', 'y', 'z']],
+    channel_type=['POS'] * n_channels,
+    channel_tracked_point=[f'marker{i}' for i in range(n_markers) for _ in range(3)]
 )
 ```
 
@@ -70,7 +79,13 @@ Time series data and metadata:
 | `data` | `np.ndarray` | Motion data (rows=time, cols=channels) |
 | `columns` | `List[str]` | Channel names (must match `data.shape[1]`) |
 | `units` | `List[str]` | Units per channel (must match `len(columns)`) |
+| `channel_component` | `List[str]` | Component for each channel - **REQUIRED** |
+| `channel_type` | `List[str]` | Type for each channel - **REQUIRED** |
+| `channel_tracked_point` | `List[str]` | Tracked point for each channel - **REQUIRED** |
 | `additional_metadata` | `Dict` | Custom metadata fields |
+
+!!! info "Channel Metadata Required"
+    The three channel metadata fields (`channel_component`, `channel_type`, `channel_tracked_point`) are **required** when providing data. They must all be provided together and match the length of `columns`. These are validated against BIDS schema during construction.
 
 ## Relations to BIDS
 
@@ -145,11 +160,14 @@ data = np.array([
 
 ### Channels File Mapping
 
-The `columns` and `units` lists define the `*_channels.tsv` structure:
+The `columns`, `units`, and channel metadata lists define the `*_channels.tsv` structure:
 
 ```python
 columns = ["marker0_x", "marker0_y", "marker0_z"]
 units = ["mm", "mm", "mm"]
+channel_component = ["x", "y", "z"]
+channel_type = ["POS", "POS", "POS"]
+channel_tracked_point = ["marker0", "marker0", "marker0"]
 ```
 
 **Generates:**
@@ -160,17 +178,26 @@ marker0_y    y          POS   marker0        mm
 marker0_z    z          POS   marker0        mm
 ```
 
-**Automatic parsing:**
-- `marker0_x` → `component=x`, `tracked_point=marker0`, `type=POS`
-- `pelvis_qw` → `component=qw`, `tracked_point=pelvis`, `type=ORNT`
-- `COM_vx` → `component=vx`, `tracked_point=COM`, `type=VEL`
+**Valid component values:**
+- `x`, `y`, `z` - Spatial axes
+- `quat_w`, `quat_x`, `quat_y`, `quat_z` - Quaternion components
+- `n/a` - Not applicable
 
-**Channel types:**
-- `POS`: Position (x, y, z)
-- `ORNT`: Orientation (qw, qx, qy, qz)
-- `VEL`: Velocity (vx, vy, vz)
-- `ACCEL`: Acceleration (ax, ay, az)
-- `ANGVEL`: Angular velocity (wx, wy, wz)
+**Valid type values (uppercase required):**
+- `POS` - Position
+- `ORNT` - Orientation
+- `VEL` - Velocity
+- `ACCEL` - Acceleration
+- `GYRO` - Gyroscope
+- `ANGACCEL` - Angular acceleration
+- `MAGN` - Magnetometer
+- `JNTANG` - Joint angle
+- `LATENCY` - Latency
+- `MISC` - Miscellaneous
+
+**Component-type compatibility is validated:**
+- Quaternion components (`quat_*`) can only be used with `ORNT` type
+- Spatial components (`x`, `y`, `z`) can be used with `POS`, `VEL`, `ACCEL`, `GYRO`, `MAGN`, `ANGACCEL` types
 
 ### Scans File Mapping
 

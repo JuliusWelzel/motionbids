@@ -200,15 +200,18 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
     - tracked_point: REQUIRED (label of the tracked point)
     - units: REQUIRED (e.g., mm, rad, s)
     
+    The MotionData instance MUST have channel_component, channel_type, and 
+    channel_tracked_point fields provided explicitly.
+    
     Args:
-        data: MotionData instance with columns and units defined
+        data: MotionData instance with columns, units, and channel metadata defined
         output_path: Path where channels TSV file will be written
     
     Returns:
         Path to the created channels.tsv file
     
     Raises:
-        ValueError: If columns or units are not defined
+        ValueError: If columns, units, or channel metadata are not defined
     """
     output_path = Path(output_path)
     
@@ -218,17 +221,30 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
     if data.units is None:
         raise ValueError("Units must be defined to export channels.tsv")
     
+    # Require explicit channel metadata
+    if (data.channel_component is None or 
+        data.channel_type is None or 
+        data.channel_tracked_point is None):
+        raise ValueError(
+            "Channel metadata (channel_component, channel_type, channel_tracked_point) "
+            "must be explicitly provided to create BIDS-compliant channels.tsv file. "
+            "These fields are validated against the BIDS schema during MotionData construction."
+        )
+    
     # Write channels.tsv with BIDS-required columns
     with open(output_path, 'w', encoding='utf-8') as f:
         # Header - column order is important!
         f.write('name\tcomponent\ttype\ttracked_point\tunits\n')
         
-        # Data rows - parse channel names to extract component and tracked_point
-        for col_name, unit in zip(data.columns, data.units):
-            # Try to parse common patterns like "marker0_x", "point1_y", etc.
-            component, tracked_point, channel_type = _parse_channel_name(col_name)
-            
-            f.write(f'{col_name}\t{component}\t{channel_type}\t{tracked_point}\t{unit}\n')
+        # Use explicit metadata
+        for col_name, component, ch_type, tracked_point, unit in zip(
+            data.columns, 
+            data.channel_component, 
+            data.channel_type, 
+            data.channel_tracked_point, 
+            data.units
+        ):
+            f.write(f'{col_name}\t{component}\t{ch_type}\t{tracked_point}\t{unit}\n')
     
     return output_path
 
@@ -308,66 +324,6 @@ def export_scans_tsv(
             f.write(f'{relative_path}\t{data.acq_time}\n')
     
     return output_path
-
-
-def _parse_channel_name(channel_name: str) -> tuple[str, str, str]:
-    """
-    Parse a channel name to extract component, tracked_point, and type.
-    
-    Args:
-        channel_name: Name of the channel (e.g., "marker0_x", "point1_quat_w")
-    
-    Returns:
-        Tuple of (component, tracked_point, type)
-        - component: The measurement component (x, y, z, quat_x, etc.)
-        - tracked_point: The label of the tracked point
-        - type: The type of measurement (POS, ORNT, etc.)
-    """
-    # Default values
-    component = "n/a"
-    tracked_point = "n/a"
-    channel_type = "POS"  # Default to position
-    
-    # Try to parse patterns like "marker0_x", "point1_y", etc.
-    parts = channel_name.split('_')
-    
-    if len(parts) >= 2:
-        # Last part is likely the component
-        last_part = parts[-1].lower()
-        
-        # Check for position components
-        if last_part in ['x', 'y', 'z']:
-            component = last_part
-            channel_type = "POS"
-            tracked_point = '_'.join(parts[:-1])
-        # Check for orientation components (quaternions)
-        elif last_part in ['w', 'i', 'j', 'k'] and len(parts) >= 3 and parts[-2].lower() == 'quat':
-            component = f"quat_{last_part}"
-            channel_type = "ORNT"
-            tracked_point = '_'.join(parts[:-2])
-        # Check for Euler angles
-        elif last_part in ['roll', 'pitch', 'yaw']:
-            component = last_part
-            channel_type = "ORNT"
-            tracked_point = '_'.join(parts[:-1])
-        # Check for velocity
-        elif last_part in ['vx', 'vy', 'vz']:
-            component = last_part
-            channel_type = "VEL"
-            tracked_point = '_'.join(parts[:-1])
-        # Check for acceleration
-        elif last_part in ['ax', 'ay', 'az']:
-            component = last_part
-            channel_type = "ACCEL"
-            tracked_point = '_'.join(parts[:-1])
-        else:
-            # Can't parse, use the whole name as tracked point
-            tracked_point = channel_name
-    else:
-        # Single part name, use as tracked point
-        tracked_point = channel_name
-    
-    return component, tracked_point, channel_type
 
 
 def create_bids_directory_structure(
