@@ -127,4 +127,4 @@ your-study/
 
 ---
 
-**License**: MIT | **Python**: 3.8+ | **Dependencies**: NumPy, bidsschematools, dataclasses-json
+**License**: MIT | **Python**: 3.10+ | **Dependencies**: NumPy, bidsschematools, dataclasses-json

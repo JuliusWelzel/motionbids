@@ -326,6 +326,73 @@ def export_scans_tsv(
     return output_path
 
 
+def _parse_channel_name(channel_name: str) -> tuple[str, str, str]:
+    """
+    Parse a channel name to extract component, tracked_point, and type.
+
+    This is a best-effort parser used when explicit channel metadata is not
+    provided. It supports common naming patterns such as:
+    - marker0_x, point1_y -> position components
+    - marker0_quat_w -> quaternion orientation
+    - sensor1_roll -> Euler angles
+    - marker0_vx, marker0_ax -> velocity/acceleration
+
+    Returns (component, tracked_point, channel_type).
+    """
+    # Default values
+    component = "n/a"
+    tracked_point = channel_name
+    channel_type = "POS"
+
+    parts = channel_name.split('_')
+
+    if len(parts) >= 2:
+        last_part = parts[-1].lower()
+
+        # Position axes
+        if last_part in ['x', 'y', 'z']:
+            component = last_part
+            channel_type = "POS"
+            tracked_point = '_'.join(parts[:-1])
+
+        # Quaternion components (e.g., quat_w)
+        elif len(parts) >= 2 and parts[-2].lower() == 'quat' and last_part in ['x', 'y', 'z', 'w']:
+            component = f"quat_{last_part}"
+            channel_type = "ORNT"
+            tracked_point = '_'.join(parts[:-2])
+
+        # Euler angles (roll/pitch/yaw)
+        elif last_part in ['roll', 'pitch', 'yaw']:
+            component = last_part
+            channel_type = "ORNT"
+            tracked_point = '_'.join(parts[:-1])
+
+        # Velocity (vx, vy, vz) -> component 'vx' etc.
+        elif len(last_part) == 2 and last_part[0] == 'v' and last_part[1] in ['x', 'y', 'z']:
+            component = last_part
+            channel_type = "VEL"
+            tracked_point = '_'.join(parts[:-1])
+
+        # Acceleration (ax, ay, az)
+        elif len(last_part) == 2 and last_part[0] == 'a' and last_part[1] in ['x', 'y', 'z']:
+            component = last_part
+            channel_type = "ACCEL"
+            tracked_point = '_'.join(parts[:-1])
+
+        # Gyroscope (gx, gy, gz)
+        elif len(last_part) == 2 and last_part[0] == 'g' and last_part[1] in ['x', 'y', 'z']:
+            component = last_part
+            channel_type = "GYRO"
+            tracked_point = '_'.join(parts[:-1])
+
+        # Magnetometer (mx, my, mz)
+        elif len(last_part) == 2 and last_part[0] == 'm' and last_part[1] in ['x', 'y', 'z']:
+            component = last_part
+            channel_type = "MAGN"
+            tracked_point = '_'.join(parts[:-1])
+
+    return component, tracked_point, channel_type
+
 def create_bids_directory_structure(
     base_dir: Union[str, Path],
     subject_id: str,
