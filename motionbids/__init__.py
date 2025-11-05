@@ -1,11 +1,11 @@
 """
-motion2bids: Lightweight converter for motion data to BIDS format.
+motionbids: Lightweight converter for motion data to BIDS format.
 
 This package provides tools to define, validate, and export BIDS-compliant
 motion capture data.
 
 Example usage:
-    >>> from motion2bids import MotionData, validate_motion_data, export_bids_motion
+    >>> from motionbids import MotionData, validate_motion_data, export_bids_motion
     >>> import numpy as np
     >>> 
     >>> # Create motion data object
@@ -31,8 +31,8 @@ Example usage:
 """
 
 __version__ = "0.1.0"
-__author__ = "Your Name"
-__email__ = "your.email@example.com"
+__author__ = "Julius Welzel"
+__email__ = "julius.welzel@gmail.com"
 
 # Import main classes and functions
 # Using dynamic schema-based MotionData class
