@@ -91,11 +91,16 @@ motion = MotionData(
 
 ## Validation
 
+> **Important**: Package validation is for convenience only and is **not officially supported by BIDS**. Always use the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing your dataset.
+
 ```python
 from motionbids import validate_motion_data
 
-# Validate before export
+# Convenience validation (checks basic requirements)
 validate_motion_data(motion)
+
+# Then validate with official BIDS Validator:
+# https://bids-standard.github.io/bids-validator/
 ```
 
 ## Complete Workflow

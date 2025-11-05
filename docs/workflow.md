@@ -266,7 +266,10 @@ motion = MotionData(
 
 ## Validation
 
-### Automatic Validation
+> **Important**: The validation provided by this package is for convenience only and is **not officially supported by BIDS**. Always validate your dataset with the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing or publishing.
+
+### Package Validation (Convenience)
+
 ```python
 from motionbids import validate_motion_data, ValidationError
 
@@ -284,11 +287,14 @@ except ValidationError as e:
 - ✅ Units match columns (`len(units) == len(columns)`)
 - ⚠️ Recommended fields present (warnings only)
 
-### Strict Mode
-```python
-# Treat warnings as errors
-validate_motion_data(motion, strict=True)
-```
+### Official BIDS Validation
+
+After exporting your dataset, **always validate with the official BIDS Validator**:
+
+- **Web version**: [https://bids-standard.github.io/bids-validator/](https://bids-standard.github.io/bids-validator/)
+- **Command line**: `npm install -g bids-validator && bids-validator /path/to/dataset`
+
+The official validator is the authoritative source for BIDS compliance.
 
 ## Troubleshooting
 

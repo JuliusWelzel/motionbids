@@ -40,7 +40,7 @@ uv pip install -e .
 ## Features
 
 ✅ **Schema-driven** - Auto-syncs with BIDS specification  
-✅ **Automatic validation** - Catches errors before export  
+✅ **Convenience validation** - Basic checks (use [official BIDS Validator](https://bids-standard.github.io/bids-validator/) for compliance)  
 ✅ **Simple API** - Create BIDS datasets with minimal code  
 ✅ **Complete export** - JSON metadata, TSV data, channels, scans files  
 ✅ **Lightweight** - Minimal dependencies  
