@@ -43,6 +43,9 @@ def sample_motion_data():
         data=data,
         columns=["x", "y", "z"],
         units=["mm", "mm", "mm"],
+        channel_component=["x", "y", "z"],
+        channel_type=["POS", "POS", "POS"],
+        channel_tracked_point=["marker0", "marker0", "marker0"],
     )
 
 
@@ -93,12 +96,12 @@ def test_export_channels_tsv(temp_dir, sample_motion_data):
     
     # Check header has all required columns in correct order
     assert lines[0].strip() == "name\tcomponent\ttype\ttracked_point\tunits"
-    # Check first data row - "x" is not parseable, so defaults are used
+    # Check first data row - now uses explicit channel metadata
     parts = lines[1].strip().split('\t')
     assert parts[0] == "x"  # name
-    assert parts[1] == "n/a"  # component (can't parse single letter)
-    assert parts[2] == "POS"  # type (default)
-    assert parts[3] == "x"  # tracked_point (uses full name)
+    assert parts[1] == "x"  # component (from channel_component)
+    assert parts[2] == "POS"  # type (from channel_type)
+    assert parts[3] == "marker0"  # tracked_point (from channel_tracked_point)
     assert parts[4] == "mm"  # units
 
 
@@ -263,7 +266,11 @@ def test_export_tsv_1d_data(temp_dir):
         sampling_frequency=100.0,
         tracked_points_count=10,
         data=np.random.randn(100),
-        columns=["x"]
+        columns=["x"],
+        units=["mm"],
+        channel_component=["x"],
+        channel_type=["POS"],
+        channel_tracked_point=["marker0"]
     )
     
     files = export_bids_motion(motion, temp_dir)

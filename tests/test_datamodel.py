@@ -47,6 +47,9 @@ def test_motion_data_creation_full():
         data=data,
         columns=columns,
         units=units,
+        channel_component=["x", "y", "z"],
+        channel_type=["POS", "POS", "POS"],
+        channel_tracked_point=["marker0", "marker0", "marker0"],
         additional_metadata={"CustomField": "value"}
     )
     
@@ -226,7 +229,11 @@ def test_motion_data_with_1d_array():
         tracked_points_count=10,
         tracksys="optical",
         data=data,
-        columns=["x"]
+        columns=["x"],
+        units=["mm"],
+        channel_component=["x"],
+        channel_type=["POS"],
+        channel_tracked_point=["marker0"]
     )
     
     assert motion.data.shape == (100,)

@@ -213,7 +213,11 @@ def test_validate_data_duration_mismatch():
         tracked_points_count=10,
         recording_duration=2.0,  # 2 seconds would need 200 samples
         data=data,
-        columns=["x", "y", "z"]
+        columns=["x", "y", "z"],
+        units=["mm", "mm", "mm"],
+        channel_component=["x", "y", "z"],
+        channel_type=["POS", "POS", "POS"],
+        channel_tracked_point=["marker0", "marker0", "marker0"]
     )
     
     with pytest.raises(ValidationError, match="Number of samples"):
