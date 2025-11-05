@@ -167,7 +167,6 @@ pytest --cov=motionbids
 
 - 📖 [Documentation](https://juliuswelzel.github.io/motionbids/)
 - 🐛 [Issues](https://github.com/JuliusWelzel/motionbids/issues)
-- 💬 [Discussions](https://github.com/JuliusWelzel/motionbids/discussions)
 - 📜 [BIDS Spec](https://bids-specification.readthedocs.io/)
 
 ## License
