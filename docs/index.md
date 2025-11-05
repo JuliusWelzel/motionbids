@@ -29,7 +29,8 @@ export_bids_motion(motion, out_dir="bids_dataset/")
 
 ## Installation
 
-> **Note**: This package is not yet published on PyPI. Install from source:
+!!! note "Not on PyPI"
+    This package is not yet published on PyPI. Install from source:
 
 ```bash
 git clone https://github.com/JuliusWelzel/motionbids.git

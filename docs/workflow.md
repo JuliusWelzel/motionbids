@@ -266,7 +266,8 @@ motion = MotionData(
 
 ## Validation
 
-> **Important**: The validation provided by this package is for convenience only and is **not officially supported by BIDS**. Always validate your dataset with the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing or publishing.
+!!! warning "Important"
+    The validation provided by this package is for convenience only and is **not officially supported by BIDS**. Always validate your dataset with the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing or publishing.
 
 ### Package Validation (Convenience)
 
@@ -282,19 +283,19 @@ except ValidationError as e:
 
 ### What Gets Validated
 - ✅ Required fields present (`subject_id`, `task_name`, `tracksys`, etc.)
-- ✅ Positive numeric values (`sampling_frequency > 0`)
 - ✅ Array dimensions match (`data.shape[1] == len(columns)`)
 - ✅ Units match columns (`len(units) == len(columns)`)
+- ✅ Positive numeric values (`sampling_frequency > 0`)
 - ⚠️ Recommended fields present (warnings only)
 
 ### Official BIDS Validation
 
-After exporting your dataset, **always validate with the official BIDS Validator**:
+!!! warning "Important"
+    After exporting your dataset, **always validate with the official BIDS Validator**:
 
-- **Web version**: [https://bids-standard.github.io/bids-validator/](https://bids-standard.github.io/bids-validator/)
-- **Command line**: `npm install -g bids-validator && bids-validator /path/to/dataset`
+    - **Web version**: [https://bids-standard.github.io/bids-validator/](https://bids-standard.github.io/bids-validator/)
 
-The official validator is the authoritative source for BIDS compliance.
+    The official validator is the authoritative source for BIDS compliance.
 
 ## Troubleshooting
 
@@ -320,15 +321,6 @@ columns = ["ch0", "ch1"]  # Only 2 names for 30 columns
 
 # ✓ Match dimensions
 columns = [f"ch{i}" for i in range(30)]  # 30 names for 30 columns
-```
-
-### "sampling_frequency must be positive"
-```python
-# ✗ Invalid
-sampling_frequency = -120.0
-
-# ✓ Valid
-sampling_frequency = 120.0
 ```
 
 ## Next Steps

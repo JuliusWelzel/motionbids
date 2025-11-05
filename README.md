@@ -43,7 +43,7 @@ bids_dataset/
 
 ## Installation
 
-> **Note**: This package is not yet published on PyPI. Install from source:
+**📦 Not on PyPI**: This package is not yet published on PyPI. Install from source:
 
 ```bash
 # Clone the repository
@@ -91,7 +91,7 @@ motion = MotionData(
 
 ## Validation
 
-> **Important**: Package validation is for convenience only and is **not officially supported by BIDS**. Always use the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing your dataset.
+**⚠️ Important**: Package validation is for convenience only and is **not officially supported by BIDS**. Always use the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing your dataset.
 
 ```python
 from motionbids import validate_motion_data
