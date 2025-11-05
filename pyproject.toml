@@ -3,7 +3,7 @@ name = "motionbids"
 version = "0.1.0"
 description = "Lightweight converter for motion data to BIDS format"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Julius Welzel", email = "julius.welzel@gmail.com"}
