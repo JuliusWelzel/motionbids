@@ -43,12 +43,18 @@ bids_dataset/
 
 ## Installation
 
-```bash
-# Using uv (recommended)
-uv pip install motionbids
+> **Note**: This package is not yet published on PyPI. Install from source:
 
-# Using pip
-pip install motionbids
+```bash
+# Clone the repository
+git clone https://github.com/JuliusWelzel/motionbids.git
+cd motionbids
+
+# Install with uv (recommended)
+uv pip install -e .
+
+# Or with pip
+pip install -e .
 ```
 
 ## Features

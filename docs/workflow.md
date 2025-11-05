@@ -4,12 +4,12 @@ This guide demonstrates a full workflow from raw motion data to a BIDS-compliant
 
 ## Installation
 
-```bash
-# Using uv (recommended)
-uv pip install motionbids
+> **Note**: This package is not yet published on PyPI. Install from source:
 
-# Using pip
-pip install motionbids
+```bash
+git clone https://github.com/JuliusWelzel/motionbids.git
+cd motionbids
+uv pip install -e .
 ```
 
 ## Basic Workflow
