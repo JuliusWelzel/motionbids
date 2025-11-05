@@ -135,26 +135,57 @@ units = ["mm"] * 30
 
 ## Channel Metadata
 
-Channels are described in `*_channels.tsv` with these fields:
+Channels are described in `*_channels.tsv` with these **required** fields:
 
-| Column | Description | Example Values |
-|--------|-------------|----------------|
-| `name` | Full channel name | `marker0_x`, `LFHD_y`, `pelvis_qw` |
-| `component` | Measurement component | `x`, `y`, `z`, `qw`, `qx`, `qy`, `qz` |
-| `type` | Data type | `POS`, `ORNT`, `VEL`, `ACCEL`, `ANGVEL` |
-| `tracked_point` | Point/marker label | `marker0`, `LFHD`, `pelvis` |
-| `units` | Physical units | `mm`, `m`, `deg`, `rad`, `m/s` |
+| Column | Required | Description | Example Values |
+|--------|----------|-------------|----------------|
+| `name` | ✅ Yes | Full channel name | `marker0_x`, `LFHD_y`, `pelvis_quat_w` |
+| `component` | ✅ Yes | Measurement component (validated) | `x`, `y`, `z`, `quat_x`, `quat_y`, `quat_z`, `quat_w`, `n/a` |
+| `type` | ✅ Yes | Data type (validated, uppercase required) | `POS`, `ORNT`, `VEL`, `ACCEL`, `GYRO` |
+| `tracked_point` | ✅ Yes | Point/marker label | `marker0`, `LFHD`, `pelvis` |
+| `units` | ✅ Yes | Physical units | `mm`, `m`, `deg`, `rad`, `m/s` |
+
+!!! important "Channel Validation"
+    All five fields are **required** for each channel. The `component` and `type` values are validated against the BIDS schema to ensure compliance. Type values MUST be uppercase.
+
+### Channel Components
+
+Allowed values for the `component` column (from BIDS schema):
+
+| Component | Description |
+|-----------|-------------|
+| `x` | Position along X-axis, rotation about X-axis, or magnetic field strength along X-axis |
+| `y` | Position along Y-axis, rotation about Y-axis, or magnetic field strength along Y-axis |
+| `z` | Position along Z-axis, rotation about Z-axis, or magnetic field strength along Z-axis |
+| `quat_x` | Quaternion component associated with X-axis |
+| `quat_y` | Quaternion component associated with Y-axis |
+| `quat_z` | Quaternion component associated with Z-axis |
+| `quat_w` | Non-axial quaternion component |
+| `n/a` | Channels with no corresponding spatial axis |
+
+!!! note "Quaternion Convention"
+    When using quaternions for orientation, axial components MUST be specified as `quat_x`, `quat_y`, `quat_z`, and the non-axial component as `quat_w`.
 
 ### Channel Types
 
-| Type | Full Name | Description | Common Components |
-|------|-----------|-------------|-------------------|
-| `POS` | Position | 3D position | `x`, `y`, `z` |
-| `ORNT` | Orientation | Quaternion orientation | `qw`, `qx`, `qy`, `qz` |
-| `VEL` | Velocity | Linear velocity | `vx`, `vy`, `vz` |
-| `ACCEL` | Acceleration | Linear acceleration | `ax`, `ay`, `az` |
-| `ANGVEL` | Angular Velocity | Angular velocity | `wx`, `wy`, `wz` |
-| `OTHER` | Other | Other measurements | (any) |
+| Type | Description | Required Component |
+|------|-------------|-------------------|
+| `POS` | Position in space | `x`, `y`, or `z` |
+| `ORNT` | Orientation | `x`, `y`, `z`, `quat_x`, `quat_y`, `quat_z`, or `quat_w` |
+| `VEL` | Velocity | `x`, `y`, or `z` |
+| `ACCEL` | Accelerometer | `x`, `y`, or `z` |
+| `GYRO` | Gyrometer | `x`, `y`, or `z` |
+| `ANGACCEL` | Angular acceleration | `x`, `y`, or `z` |
+| `MAGN` | Magnetic field strength | `x`, `y`, or `z` |
+| `JNTANG` | Joint angle between bodyparts | Angle in degrees |
+| `LATENCY` | Sample latency from recording onset | In seconds (s[.000000]) |
+| `MISC` | Miscellaneous channels | Any |
+
+!!! warning "Uppercase Required"
+    Channel type values MUST be uppercase (e.g., `POS`, not `pos`).
+
+!!! note "Schema Validation"
+    The package validates channel types and components against the BIDS schema. Only these values are allowed in the `*_channels.tsv` file.
 
 **Example channels file:**
 ```tsv
@@ -162,10 +193,12 @@ name          component  type    tracked_point  units
 marker0_x     x          POS     marker0        mm
 marker0_y     y          POS     marker0        mm
 marker0_z     z          POS     marker0        mm
-pelvis_qw     qw         ORNT    pelvis         n/a
-pelvis_qx     qx         ORNT    pelvis         n/a
-COM_vx        vx         VEL     COM            m/s
-head_ax       ax         ACCEL   head           m/s²
+pelvis_quat_w quat_w     ORNT    pelvis         n/a
+pelvis_quat_x quat_x     ORNT    pelvis         n/a
+pelvis_quat_y quat_y     ORNT    pelvis         n/a
+pelvis_quat_z quat_z     ORNT    pelvis         n/a
+COM_x         x          VEL     COM            m/s
+head_x        x          ACCEL   head           m/s²
 ```
 
 ## Acquisition Time

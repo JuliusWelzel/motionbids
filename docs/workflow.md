@@ -192,10 +192,11 @@ Time series data (no headers, per BIDS spec):
 ### 3. Channels File (`*_channels.tsv`)
 Channel descriptions:
 ```
-name         component  type  tracked_point  units
-marker0_x    x          POS   marker0        mm
-marker0_y    y          POS   marker0        mm
-marker0_z    z          POS   marker0        mm
+name             component  type  tracked_point  units
+marker0_x        x          POS   marker0        mm
+marker0_y        y          POS   marker0        mm
+marker0_z        z          POS   marker0        mm
+pelvis_quat_w    quat_w     ORNT  pelvis         n/a
 ```
 
 ### 4. Scans File (`*_scans.tsv`)
@@ -282,11 +283,38 @@ except ValidationError as e:
 ```
 
 ### What Gets Validated
+
+#### Required Fields
 - ✅ Required fields present (`subject_id`, `task_name`, `tracksys`, etc.)
-- ✅ Array dimensions match (`data.shape[1] == len(columns)`)
-- ✅ Units match columns (`len(units) == len(columns)`)
 - ✅ Positive numeric values (`sampling_frequency > 0`)
 - ⚠️ Recommended fields present (warnings only)
+
+#### Data Consistency
+- ✅ Array dimensions match (`data.shape[1] == len(columns)`)
+- ✅ Units match columns (`len(units) == len(columns)`)
+
+#### Channel Validation
+- ✅ All required channel fields present: `name`, `component`, `type`, `tracked_point`, `units`
+- ✅ Channel `component` values validated against BIDS schema
+- ✅ Channel `type` values validated against BIDS schema (uppercase required)
+- ✅ Channel names parseable to extract component and tracked point information
+
+**Allowed channel types** (from BIDS schema):
+- `POS` - Position in space (requires component: x, y, or z)
+- `ORNT` - Orientation (requires component: x, y, z, quat_x, quat_y, quat_z, or quat_w)
+- `VEL` - Velocity (requires component: x, y, or z)
+- `ACCEL` - Accelerometer (requires component: x, y, or z)
+- `GYRO` - Gyrometer (requires component: x, y, or z)
+- `ANGACCEL` - Angular acceleration (requires component: x, y, or z)
+- `MAGN` - Magnetic field strength (requires component: x, y, or z)
+- `JNTANG` - Joint angle between bodyparts
+- `LATENCY` - Sample latency from recording onset
+- `MISC` - Miscellaneous channels
+
+**Allowed channel components** (from BIDS schema):
+- Spatial axes: `x`, `y`, `z`
+- Quaternions: `quat_x`, `quat_y`, `quat_z`, `quat_w`
+- No axis: `n/a`
 
 ### Official BIDS Validation
 
