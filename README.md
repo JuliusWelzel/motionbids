@@ -57,6 +57,11 @@ uv pip install -e .
 pip install -e .
 ```
 
+## Dependencies 
+[dataclasses-json](https://pypi.org/project/dataclasses-json/)    
+[bids-schema-tools](https://pypi.org/project/bidsschematools/)
+
+
 ## Features
 
 ✅ **Schema-driven** - Auto-syncs with BIDS specification  
