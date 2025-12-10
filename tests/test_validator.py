@@ -4,8 +4,7 @@ Tests for the validation module.
 import pytest
 import warnings
 import numpy as np
-from motionbids.datamodel import MotionData
-from motionbids.channel import Channel
+from motionbids import MotionData, Channel
 from motionbids.validator import (
     validate_motion_data,
     validate_bids_compliance,
@@ -186,11 +185,15 @@ def test_validate_high_sampling_frequency():
 
 
 def test_validate_data_columns_mismatch():
-    """Test that data column mismatch is caught in __post_init__."""
+    """Test that data channel mismatch is caught in __post_init__."""
     data = np.random.randn(100, 3)
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm")
+    ]  # Only 2 channels for 3D data
     
     # This should fail in __post_init__ when creating the MotionData object
-    with pytest.raises(ValueError, match="Number of columns.*must match"):
+    with pytest.raises(ValueError, match="Number of channels.*must match"):
         MotionData(
             subject_id="01",
             task_name="rest",
@@ -198,7 +201,7 @@ def test_validate_data_columns_mismatch():
             sampling_frequency=100.0,
             tracked_points_count=10,
             data=data,
-            columns=["x", "y"]  # Only 2 columns for 3D data
+            channels=channels
         )
 
 

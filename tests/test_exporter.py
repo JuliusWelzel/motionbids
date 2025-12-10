@@ -7,8 +7,7 @@ import tempfile
 import shutil
 from pathlib import Path
 import numpy as np
-from motionbids.datamodel import MotionData
-from motionbids.channel import Channel
+from motionbids import MotionData, Channel
 from motionbids.exporter import (
     export_bids_motion,
     export_json_metadata,
