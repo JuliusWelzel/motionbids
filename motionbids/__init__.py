@@ -37,6 +37,7 @@ __email__ = "julius.welzel@gmail.com"
 # Import main classes and functions
 # Using dynamic schema-based MotionData class
 from .datamodel_dynamic import MotionData
+from .channel import Channel
 from .validator import (
     validate_motion_data,
     validate_bids_compliance,
@@ -67,6 +68,7 @@ __all__ = [
     
     # Core data model
     "MotionData",
+    "Channel",
     
     # Validation
     "validate_motion_data",

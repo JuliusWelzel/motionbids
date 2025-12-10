@@ -5,11 +5,24 @@ A lightweight Python package for creating **BIDS-compliant motion capture data**
 ## Quick Start
 
 ```python
-from motionbids import MotionData, export_bids_motion
+from motionbids import MotionData, Channel, export_bids_motion
 import numpy as np
 
 # Your motion data (rows=timepoints, columns=channels)
 data = np.random.randn(1200, 30)
+
+# Define channels following BIDS schema
+channels = [
+    Channel(
+        name=f"marker{i}_{axis}",
+        component=axis,
+        type="POS",
+        tracked_point=f"marker{i}",
+        units="mm"
+    )
+    for i in range(10)
+    for axis in ['x', 'y', 'z']
+]
 
 # Create BIDS motion object
 motion = MotionData(
@@ -19,8 +32,7 @@ motion = MotionData(
     sampling_frequency=120.0,
     tracked_points_count=10,
     data=data,
-    columns=[f"marker{i}_{axis}" for i in range(10) for axis in ['x','y','z']],
-    units=["mm"] * 30
+    channels=channels
 )
 
 # Export to BIDS format

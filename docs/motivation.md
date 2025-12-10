@@ -9,7 +9,7 @@
 ## Example
 
 ```python
-from motionbids import MotionData, export_bids_motion
+from motionbids import MotionData, Channel, export_bids_motion
 import numpy as np
 
 # Your motion data (1200 timepoints, 30 channels)
@@ -24,8 +24,11 @@ motion = MotionData(
     tracked_points_count=10,
     manufacturer="Vicon",
     data=data,
-    columns=[f"marker{i}_{axis}" for i in range(10) for axis in ['x','y','z']],
-    units=["mm"] * 30
+    channels=[
+        Channel(name=f"marker{i}_{axis}", component=axis, type="POS",
+                tracked_point=f"marker{i}", units="mm")
+        for i in range(10) for axis in ['x', 'y', 'z']
+    ]
 )
 
 # Export to BIDS format

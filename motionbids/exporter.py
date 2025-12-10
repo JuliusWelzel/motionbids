@@ -93,17 +93,17 @@ def export_bids_motion(
     
     # Export TSV data if present
     if data.data is not None:
-        if data.columns is None:
+        if data.channels is None or len(data.channels) == 0:
             raise ValueError(
-                "data array is present but columns are not defined. "
-                "Please specify column names in the MotionData.columns field."
+                "data array is present but channels are not defined. "
+                "Please specify channels in the MotionData.channels field."
             )
         
         tsv_path = export_tsv_data(data, tsv_path)
         created_files['tsv'] = tsv_path
         
-        # Export channels.tsv if units are specified
-        if data.units is not None:
+        # Export channels.tsv (always create it if we have channels)
+        if data.channels is not None and len(data.channels) > 0:
             channels_path = export_channels_tsv(data, channels_path)
             created_files['channels'] = channels_path
     
@@ -163,15 +163,9 @@ def export_tsv_data(data: MotionData, output_path: Union[str, Path]) -> Path:
         Path to the created TSV file
     
     Raises:
-        ValueError: If data or columns are not defined
+        ValueError: If data is not defined
     """
     output_path = Path(output_path)
-    
-    if data.data is None:
-        raise ValueError("No data array to export")
-    
-    if data.columns is None:
-        raise ValueError("Column names must be defined to export TSV")
     
     # Import numpy here to avoid requiring it if not using data export
     import numpy as np
@@ -200,51 +194,50 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
     - tracked_point: REQUIRED (label of the tracked point)
     - units: REQUIRED (e.g., mm, rad, s)
     
-    The MotionData instance MUST have channel_component, channel_type, and 
-    channel_tracked_point fields provided explicitly.
+    And optionally:
+    - placement, reference_frame, description, sampling_frequency, status, status_description
+    
+    The MotionData instance MUST have a channels list with Channel objects.
     
     Args:
-        data: MotionData instance with columns, units, and channel metadata defined
+        data: MotionData instance with channels defined
         output_path: Path where channels TSV file will be written
     
     Returns:
         Path to the created channels.tsv file
     
     Raises:
-        ValueError: If columns, units, or channel metadata are not defined
+        ValueError: If channels list is empty
     """
     output_path = Path(output_path)
     
-    if data.columns is None:
-        raise ValueError("Column names must be defined to export channels.tsv")
-    
-    if data.units is None:
-        raise ValueError("Units must be defined to export channels.tsv")
-    
-    # Require explicit channel metadata
-    if (data.channel_component is None or 
-        data.channel_type is None or 
-        data.channel_tracked_point is None):
-        raise ValueError(
-            "Channel metadata (channel_component, channel_type, channel_tracked_point) "
-            "must be explicitly provided to create BIDS-compliant channels.tsv file. "
-            "These fields are validated against the BIDS schema during MotionData construction."
-        )
+    if not data.channels:
+        raise ValueError("Channels list must be defined to export channels.tsv")
     
     # Write channels.tsv with BIDS-required columns
     with open(output_path, 'w', encoding='utf-8') as f:
-        # Header - column order is important!
-        f.write('name\tcomponent\ttype\ttracked_point\tunits\n')
+        # Get all fields from first channel to determine what columns to include
+        # Start with required fields
+        fields = ['name', 'component', 'type', 'tracked_point', 'units']
         
-        # Use explicit metadata
-        for col_name, component, ch_type, tracked_point, unit in zip(
-            data.columns, 
-            data.channel_component, 
-            data.channel_type, 
-            data.channel_tracked_point, 
-            data.units
-        ):
-            f.write(f'{col_name}\t{component}\t{ch_type}\t{tracked_point}\t{unit}\n')
+        # Check if any channel has optional fields
+        optional_fields = ['placement', 'reference_frame', 'description', 
+                          'sampling_frequency', 'status', 'status_description']
+        for field in optional_fields:
+            if any(getattr(ch, field, None) is not None for ch in data.channels):
+                fields.append(field)
+        
+        # Write header
+        f.write('\t'.join(fields) + '\n')
+        
+        # Write each channel as a row
+        for channel in data.channels:
+            row_values = []
+            for field in fields:
+                value = getattr(channel, field, None)
+                # Convert None to 'n/a' for TSV
+                row_values.append(str(value) if value is not None else 'n/a')
+            f.write('\t'.join(row_values) + '\n')
     
     return output_path
 

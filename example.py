@@ -8,6 +8,7 @@ import numpy as np
 from pathlib import Path
 from motionbids import (
     MotionData,
+    Channel,
     validate_motion_data,
     export_bids_motion,
     create_bids_directory_structure,
@@ -28,12 +29,19 @@ def main():
     # Generate sample data (rows=timepoints, columns=channels)
     data = np.random.randn(n_timepoints, n_channels) * 10 + 100
     
-    # Define channel names and units
-    columns = [f"marker{i}_{axis}" for i in range(n_markers) for axis in ['x', 'y', 'z']]
-    units = ["mm"] * n_channels
-    # Define channel names and units
-    columns = [f"marker{i}_{axis}" for i in range(n_markers) for axis in ['x', 'y', 'z']]
-    units = ["mm"] * n_channels
+    # Define channel metadata following BIDS specification
+    channels = [
+        Channel(
+            name=f"marker{i}_{axis}",
+            component=axis,
+            type="POS",
+            tracked_point=f"marker{i}",
+            units="mm"
+        )
+        for i in range(n_markers)
+        for axis in ['x', 'y', 'z']
+    ]
+
     
     # =========================================================================
     # 2. Create BIDS-compliant MotionData object
@@ -61,23 +69,16 @@ def main():
         run=1,
         acq_time="2025-11-04T14:30:00",  # Triggers scans.tsv creation
         
-        # Data arrays
+        # Data and channels (REQUIRED)
         data=data,
-        columns=columns,
-        units=units,
-        
-        # Additional metadata (optional)
-        additional_metadata={
-            "CaptureVolume": "8m x 6m x 3m",
-            "CalibrationDate": "2025-11-01"
-        }
+        channels=channels
     )
     
     # =========================================================================
     # 3. Validate BIDS compliance
     # =========================================================================
     validate_motion_data(motion)
-    print("  ✓ Passed")
+    print("Package internal validation passed")
     
     # =========================================================================
     # 4. Export to BIDS format
@@ -130,7 +131,7 @@ def main():
         if key in metadata:
             print(f"  {key}: {metadata[key]}")
     
-    print(f"\n✓ Successfully created BIDS dataset at: {bids_root.absolute()}")
+    print(f"\nSuccessfully created BIDS dataset at: {bids_root.absolute()}")
     print("-" * 60)
 
 

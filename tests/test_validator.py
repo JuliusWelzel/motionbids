@@ -5,6 +5,7 @@ import pytest
 import warnings
 import numpy as np
 from motionbids.datamodel import MotionData
+from motionbids.channel import Channel
 from motionbids.validator import (
     validate_motion_data,
     validate_bids_compliance,
@@ -204,6 +205,11 @@ def test_validate_data_columns_mismatch():
 def test_validate_data_duration_mismatch():
     """Test validation fails when data doesn't match recording duration."""
     data = np.random.randn(100, 3)  # 100 samples
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="z", component="z", type="POS", tracked_point="marker0", units="mm")
+    ]
     
     motion = MotionData(
         subject_id="01",
@@ -213,11 +219,7 @@ def test_validate_data_duration_mismatch():
         tracked_points_count=10,
         recording_duration=2.0,  # 2 seconds would need 200 samples
         data=data,
-        columns=["x", "y", "z"],
-        units=["mm", "mm", "mm"],
-        channel_component=["x", "y", "z"],
-        channel_type=["POS", "POS", "POS"],
-        channel_tracked_point=["marker0", "marker0", "marker0"]
+        channels=channels
     )
     
     with pytest.raises(ValidationError, match="Number of samples"):

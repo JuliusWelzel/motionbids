@@ -22,7 +22,7 @@ Motion data should be a NumPy array with:
 
 ```python
 import numpy as np
-from motionbids import MotionData, validate_motion_data, export_bids_motion
+from motionbids import MotionData, Channel, validate_motion_data, export_bids_motion
 
 # Example: 10 markers tracked at 120 Hz for 10 seconds
 n_timepoints = 1200  # 10 seconds × 120 Hz
@@ -32,16 +32,19 @@ n_channels = n_markers * 3  # x, y, z for each marker
 # Load or generate your data (rows=time, columns=channels)
 data = np.random.randn(n_timepoints, n_channels)
 
-# Define channel names and units
-columns = [f"marker{i}_{axis}" 
-           for i in range(n_markers) 
-           for axis in ['x', 'y', 'z']]
-units = ["mm"] * n_channels
-
 # Define channel metadata (REQUIRED for BIDS compliance)
-channel_component = [axis for i in range(n_markers) for axis in ['x', 'y', 'z']]
-channel_type = ['POS'] * n_channels
-channel_tracked_point = [f'marker{i}' for i in range(n_markers) for _ in range(3)]
+# Each channel needs: name, component, type, tracked_point, units
+channels = [
+    Channel(
+        name=f"marker{i}_{axis}",
+        component=axis,
+        type="POS",
+        tracked_point=f"marker{i}",
+        units="mm"
+    )
+    for i in range(n_markers)
+    for axis in ['x', 'y', 'z']
+]
 ```
 
 ### Step 2: Create MotionData Object
@@ -66,15 +69,9 @@ motion = MotionData(
     acquisition="indoor",
     acq_time="2025-11-05T14:30:00",
     
-    # Data arrays
+    # Data and channels (REQUIRED)
     data=data,
-    columns=columns,
-    units=units,
-    
-    # Channel metadata (REQUIRED for channels.tsv)
-    channel_component=channel_component,
-    channel_type=channel_type,
-    channel_tracked_point=channel_tracked_point
+    channels=channels  # List of Channel objects
 )
 ```
 
@@ -143,11 +140,7 @@ for subject_id in ["01", "02", "03"]:
             tracked_points_count=10,
             manufacturer="Vicon",
             data=data,
-            columns=columns,
-            units=units,
-            channel_component=channel_component,
-            channel_type=channel_type,
-            channel_tracked_point=channel_tracked_point,
+            channels=channels,  # List of Channel objects
             acq_time=get_timestamp(subject_id, session_id)  # Your function
         )
         
@@ -232,11 +225,7 @@ for run_num in [1, 2, 3]:
         sampling_frequency=120.0,
         tracked_points_count=10,
         data=load_run(run_num),
-        columns=columns,
-        units=units,
-        channel_component=channel_component,
-        channel_type=channel_type,
-        channel_tracked_point=channel_tracked_point
+        channels=channels  # List of Channel objects
     )
     export_bids_motion(motion, out_dir=motion_dir)
 ```
@@ -252,9 +241,16 @@ columns = df.columns.tolist()
 
 # Define channel metadata based on your data structure
 n_markers = 10
-channel_component = [axis for i in range(n_markers) for axis in ['x', 'y', 'z']]
-channel_type = ['POS'] * len(columns)
-channel_tracked_point = [f'marker{i}' for i in range(n_markers) for _ in range(3)]
+channels = [
+    Channel(
+        name=columns[i],
+        component=['x', 'y', 'z'][i % 3],
+        type='POS',
+        tracked_point=f'marker{i // 3}',
+        units='mm'
+    )
+    for i in range(len(columns))
+]
 
 motion = MotionData(
     subject_id="01",
@@ -263,11 +259,7 @@ motion = MotionData(
     sampling_frequency=120.0,
     tracked_points_count=10,
     data=data,
-    columns=columns,
-    units=["mm"] * len(columns),
-    channel_component=channel_component,
-    channel_type=channel_type,
-    channel_tracked_point=channel_tracked_point
+    channels=channels
 )
 ```
 
@@ -280,8 +272,7 @@ motion = MotionData(
     sampling_frequency=120.0,
     tracked_points_count=10,
     data=data,
-    columns=columns,
-    units=units,
+    channels=channels,
     additional_metadata={
         "CaptureVolume": "8m x 6m x 3m",
         "CalibrationDate": "2025-11-01",

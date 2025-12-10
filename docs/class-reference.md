@@ -5,12 +5,25 @@ The `MotionData` class is the core of motionbids, representing a single motion c
 ## Class Overview
 
 ```python
-from motionbids import MotionData
+from motionbids import MotionData, Channel
 import numpy as np
 
 # Example: 10 markers, each with x, y, z components
 n_markers = 10
 n_channels = n_markers * 3
+
+# Create channel metadata following BIDS schema
+channels = [
+    Channel(
+        name=f"marker{i}_{axis}",
+        component=axis,
+        type="POS",
+        tracked_point=f"marker{i}",
+        units="mm"
+    )
+    for i in range(n_markers)
+    for axis in ['x', 'y', 'z']
+]
 
 motion = MotionData(
     # Required fields
@@ -20,15 +33,9 @@ motion = MotionData(
     sampling_frequency=120.0,
     tracked_points_count=10,
     
-    # Data arrays
+    # Data and channels (REQUIRED)
     data=np.random.randn(1200, n_channels),
-    columns=[f"marker{i}_{axis}" for i in range(n_markers) for axis in ['x','y','z']],
-    units=["mm"] * n_channels,
-    
-    # Channel metadata (REQUIRED for BIDS compliance)
-    channel_component=[axis for i in range(n_markers) for axis in ['x', 'y', 'z']],
-    channel_type=['POS'] * n_channels,
-    channel_tracked_point=[f'marker{i}' for i in range(n_markers) for _ in range(3)]
+    channels=channels
 )
 ```
 
@@ -70,22 +77,18 @@ For organizing multi-session/run studies:
 | `run` | `int` | `run` | Run index (1-indexed) |
 | `acq_time` | `str` | - | ISO 8601 timestamp |
 
-### Data Arrays
+### Data Fields
 
-Time series data and metadata:
+Time series data and channel configuration:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | `np.ndarray` | Motion data (rows=time, cols=channels) |
-| `columns` | `List[str]` | Channel names (must match `data.shape[1]`) |
-| `units` | `List[str]` | Units per channel (must match `len(columns)`) |
-| `channel_component` | `List[str]` | Component for each channel - **REQUIRED** |
-| `channel_type` | `List[str]` | Type for each channel - **REQUIRED** |
-| `channel_tracked_point` | `List[str]` | Tracked point for each channel - **REQUIRED** |
+| `data` | `np.ndarray` | Motion data (rows=time, cols=channels) - **REQUIRED** |
+| `channels` | `List[Channel]` | Channel metadata objects - **REQUIRED** |
 | `additional_metadata` | `Dict` | Custom metadata fields |
 
-!!! info "Channel Metadata Required"
-    The three channel metadata fields (`channel_component`, `channel_type`, `channel_tracked_point`) are **required** when providing data. They must all be provided together and match the length of `columns`. These are validated against BIDS schema during construction.
+!!! info "Channel Objects Required"
+    The `channels` field is **required** when providing data. It must be a list of `Channel` objects, and the length must match the number of columns in the data array. Each Channel object contains: `name`, `component`, `type`, `tracked_point`, `units` (all required), plus optional fields like `placement`, `reference_frame`, `description`, `sampling_frequency`, `status`, and `status_description`. Channel validation happens during Channel construction following BIDS schema.
 
 ## Relations to BIDS
 
@@ -358,10 +361,9 @@ motion = MotionData(
     run=1,
     acq_time="2025-11-05T14:30:00",
     
-    # Data
+    # Data and channels
     data=data,
-    columns=[f"marker{i}_{axis}" for i in range(10) for axis in ['x','y','z']],
-    units=["mm"] * 30,
+    channels=channels,
     
     # Custom
     additional_metadata={
@@ -374,6 +376,7 @@ motion = MotionData(
 print(motion.subject_id)  # "01"
 print(motion.task_name)   # "walk"
 print(motion.data.shape)  # (1200, 30)
+print(len(motion.channels))  # 30
 
 # Generate filename
 filename = motion.get_bids_filename()

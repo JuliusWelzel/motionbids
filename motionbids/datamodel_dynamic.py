@@ -9,6 +9,7 @@ from typing import Optional, List, Dict, Any
 import numpy as np
 from dataclasses_json import dataclass_json
 
+from .channel import Channel
 from .schema_utils import (
     get_motion_metadata_fields,
     get_required_fields,
@@ -64,6 +65,9 @@ def _create_motion_data_class():
     # Build field definitions
     class_fields = {}
     field_docs = {}
+    
+    # IMPORTANT: Required fields (no defaults) MUST come before optional fields (with defaults)
+    # Otherwise Python raises: "non-default argument follows default argument"
     
     # Add required BIDS entities (not from schema metadata)
     class_fields['subject_id'] = (str, field(metadata={'bids_name': 'sub', 'required': True}))
@@ -136,24 +140,19 @@ def _create_motion_data_class():
     )
     field_docs['acq_time'] = "Acquisition time in ISO 8601 format with optional fractional seconds"
     
-    # Add motion data fields
+    # Add motion data fields - These have defaults to avoid field ordering issues,
+    # but __post_init__ will validate they are actually provided
     class_fields['data'] = (
         Optional[np.ndarray],
-        field(default=None, repr=False, metadata={'motion_data': True})
+        field(default=None, repr=False, metadata={'motion_data': True, 'required': True})
     )
-    field_docs['data'] = "NumPy array containing motion time series data (shape: n_timepoints × n_channels)"
+    field_docs['data'] = "NumPy array containing motion time series data (shape: n_timepoints × n_channels) - REQUIRED"
     
-    class_fields['columns'] = (
-        Optional[List[str]],
-        field(default=None, metadata={'motion_data': True})
+    class_fields['channels'] = (
+        Optional[List[Channel]],
+        field(default=None, metadata={'motion_data': True, 'required': True})
     )
-    field_docs['columns'] = "List of column names for the TSV file (length must equal data.shape[1])"
-    
-    class_fields['units'] = (
-        Optional[List[str]],
-        field(default=None, metadata={'motion_data': True})
-    )
-    field_docs['units'] = "Units for each column (length must equal len(columns))"
+    field_docs['channels'] = "List of Channel objects defining channel metadata (REQUIRED). Must match number of data columns."
     
     class_fields['additional_metadata'] = (
         Optional[Dict[str, Any]],
@@ -168,10 +167,14 @@ def _create_motion_data_class():
     This class is dynamically generated from the BIDS schema using bidsschematools.
     
     **Data Format:**
-    - `data`: NumPy array where **rows = timepoints** and **columns = channels**
-    - `columns`: List of channel names that **must match** the number of data columns
-    - `units`: List of units per channel that **must match** the length of `columns`
-    - The `columns` and `units` define the structure of the `*_channels.tsv` file
+    - `data`: NumPy array where **rows = timepoints** and **columns = channels** (REQUIRED)
+    - `channels`: List of Channel objects defining channel metadata (REQUIRED)
+    
+    The `channels` list follows the BIDS specification for channels.tsv files.
+    Each Channel object contains: name, component, type, tracked_point, units (all required),
+    plus optional fields like placement, reference_frame, description, sampling_frequency, status.
+    
+    The number of Channel objects MUST match the number of columns in the data array.
     
     Required Fields (must be provided):
 """
@@ -222,32 +225,34 @@ def _create_motion_data_class():
             if self.run is not None and self.run < 1:
                 raise ValueError("run must be >= 1")
             
-            if self.data is not None:
-                if not isinstance(self.data, np.ndarray):
-                    raise TypeError("data must be a numpy array")
-                
-                # Check if columns match data dimensions
-                if self.columns is not None:
-                    if self.data.ndim == 1:
-                        expected_cols = 1
-                    elif self.data.ndim == 2:
-                        expected_cols = self.data.shape[1]
-                    else:
-                        raise ValueError("data must be 1D or 2D array")
-                    
-                    if len(self.columns) != expected_cols:
-                        raise ValueError(
-                            f"Number of columns ({len(self.columns)}) must match "
-                            f"data dimensions ({expected_cols})"
-                        )
-                
-                # Check if units match columns
-                if self.units is not None and self.columns is not None:
-                    if len(self.units) != len(self.columns):
-                        raise ValueError(
-                            f"Number of units ({len(self.units)}) must match "
-                            f"number of columns ({len(self.columns)})"
-                        )
+            # Validate data is required and provided
+            if self.data is None:
+                raise ValueError("data is required - must provide a numpy array")
+            
+            if not isinstance(self.data, np.ndarray):
+                raise TypeError("data must be a numpy array")
+            
+            if self.data.ndim not in [1, 2]:
+                raise ValueError("data must be 1D or 2D array")
+            
+            # Validate channels is required and provided
+            if self.channels is None:
+                raise ValueError("channels is required - must provide a list of Channel objects")
+            
+            # Determine expected number of channels
+            if self.data.ndim == 1:
+                expected_channels = 1
+            else:
+                expected_channels = self.data.shape[1]
+            
+            # Validate channels list length matches data dimensions
+            if len(self.channels) != expected_channels:
+                raise ValueError(
+                    f"Number of channels ({len(self.channels)}) must match "
+                    f"data columns ({expected_channels})"
+                )
+            
+            # Channel validation happens in Channel.__post_init__
     
     # Add fields to the class
     for field_name, (field_type, field_def) in class_fields.items():

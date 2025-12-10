@@ -281,7 +281,7 @@ Common units for motion data:
 ## Complete Field Example
 
 ```python
-from motionbids import MotionData
+from motionbids import MotionData, Channel
 import numpy as np
 
 # All field types demonstrated
@@ -315,8 +315,11 @@ motion = MotionData(
     
     # === DATA ===
     data=np.random.randn(1200, 30),  # Time series
-    columns=[f"marker{i}_{axis}" for i in range(10) for axis in ['x','y','z']],
-    units=["mm"] * 30,
+    channels=[
+        Channel(name=f"marker{i}_{axis}", component=axis, type="POS",
+                tracked_point=f"marker{i}", units="mm")
+        for i in range(10) for axis in ['x', 'y', 'z']
+    ],
     
     # === CUSTOM ===
     additional_metadata={

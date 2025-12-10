@@ -10,11 +10,24 @@ A **lightweight** Python package for exporting motion capture data to **BIDS for
 ## Quick Start
 
 ```python
-from motionbids import MotionData, export_bids_motion
+from motionbids import MotionData, Channel, export_bids_motion
 import numpy as np
 
-# Your motion data (1200 timepoints, 30 channels)
-data = np.random.randn(1200, 30)
+# Your motion data (1200 timepoints, 32 channels)
+data = np.random.randn(1200, 32)
+
+# Define channels following BIDS schema
+channels = [
+    Channel(
+        name=f"marker{i}_{axis}",
+        component=axis,
+        type="POS",
+        tracked_point=f"marker{i}",
+        units="mm"
+    )
+    for i in range(10)
+    for axis in ['x', 'y', 'z']
+]
 
 # Create BIDS motion object
 motion = MotionData(
@@ -25,8 +38,7 @@ motion = MotionData(
     tracked_points_count=10,
     manufacturer="Vicon",
     data=data,
-    columns=[f"marker{i}_{axis}" for i in range(10) for axis in ['x','y','z']],
-    units=["mm"] * 30
+    channels=channels
 )
 
 # Export to BIDS format
@@ -43,7 +55,7 @@ bids_dataset/
 
 ## Installation
 
-**📦 Not on PyPI**: This package is not yet published on PyPI. Install from source:
+**Not on PyPI**: This package is not yet published on PyPI. Install from source:
 
 ```bash
 # Clone the repository
@@ -67,7 +79,7 @@ pip install -e .
 
 ## Documentation
 
-📖 **[Full Documentation](https://juliuswelzel.github.io/motionbids/)**
+**[Full Documentation](https://juliuswelzel.github.io/motionbids/)**
 
 - [Motivation](https://juliuswelzel.github.io/motionbids/motivation/) - Why BIDS for motion?
 - [Workflow](https://juliuswelzel.github.io/motionbids/workflow/) - Complete workflow guide
@@ -84,14 +96,29 @@ motion = MotionData(
     sampling_frequency=120.0,     # Sampling rate in Hz
     tracked_points_count=10,      # Number of markers
     data=data,                    # NumPy array (rows=time, cols=channels)
-    columns=columns,              # Channel names
-    units=units                   # Units per channel
+    channels=channels             # List of Channel objects (BIDS-compliant)
+)
+```
+
+### Channel Metadata
+
+Each channel requires BIDS-compliant metadata:
+
+```python
+from motionbids import Channel
+
+channel = Channel(
+    name="marker0_x",           # Channel name
+    component="x",              # x, y, z, quat_x, quat_y, quat_z, quat_w, n/a
+    type="POS",                 # POS, ORNT, VEL, ACCEL, GYRO, MAGN, etc.
+    tracked_point="marker0",    # Label of tracked point
+    units="mm"                  # Units (mm, m, rad, deg, etc.)
 )
 ```
 
 ## Validation
 
-**⚠️ Important**: Package validation is for convenience only and is **not officially supported by BIDS**. Always use the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing your dataset.
+**Important**: Package validation is for convenience only and is **not officially supported by BIDS**. Always use the official [BIDS Validator](https://bids-standard.github.io/bids-validator/) before sharing your dataset.
 
 ```python
 from motionbids import validate_motion_data

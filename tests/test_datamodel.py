@@ -4,6 +4,7 @@ Tests for the MotionData datamodel.
 import pytest
 import numpy as np
 from motionbids.datamodel import MotionData
+from motionbids.channel import Channel
 
 
 def test_motion_data_creation_minimal():
@@ -26,8 +27,11 @@ def test_motion_data_creation_minimal():
 def test_motion_data_creation_full():
     """Test creating MotionData with all fields."""
     data = np.random.randn(100, 3)
-    columns = ["x", "y", "z"]
-    units = ["mm", "mm", "mm"]
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="z", component="z", type="POS", tracked_point="marker0", units="mm")
+    ]
     
     motion = MotionData(
         subject_id="01",
@@ -45,11 +49,7 @@ def test_motion_data_creation_full():
         run=1,
         tracksys="optical",
         data=data,
-        columns=columns,
-        units=units,
-        channel_component=["x", "y", "z"],
-        channel_type=["POS", "POS", "POS"],
-        channel_tracked_point=["marker0", "marker0", "marker0"],
+        channels=channels,
         additional_metadata={"CustomField": "value"}
     )
     
@@ -57,8 +57,8 @@ def test_motion_data_creation_full():
     assert motion.session_id == "01"
     assert motion.run == 1
     assert np.array_equal(motion.data, data)
-    assert motion.columns == columns
-    assert motion.units == units
+    assert len(motion.channels) == 3
+    assert motion.channels[0].name == "x"
 
 
 def test_motion_data_invalid_sampling_frequency():
@@ -99,11 +99,14 @@ def test_motion_data_invalid_run():
 
 
 def test_motion_data_columns_mismatch():
-    """Test that column count must match data dimensions."""
+    """Test that channel count must match data dimensions."""
     data = np.random.randn(100, 3)
-    columns = ["x", "y"]  # Only 2 columns for 3D data
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm")
+    ]  # Only 2 channels for 3D data
     
-    with pytest.raises(ValueError, match="Number of columns.*must match"):
+    with pytest.raises(ValueError, match="Number of channels.*must match"):
         MotionData(
             subject_id="01",
             task_name="rest",
@@ -111,27 +114,11 @@ def test_motion_data_columns_mismatch():
             tracked_points_count=10,
             tracksys="optical",
             data=data,
-            columns=columns
+            channels=channels
         )
 
 
-def test_motion_data_units_mismatch():
-    """Test that units count must match columns count."""
-    data = np.random.randn(100, 3)
-    columns = ["x", "y", "z"]
-    units = ["mm", "mm"]  # Only 2 units for 3 columns
-    
-    with pytest.raises(ValueError, match="Number of units.*must match"):
-        MotionData(
-            subject_id="01",
-            task_name="rest",
-            sampling_frequency=100.0,
-            tracked_points_count=10,
-            tracksys="optical",
-            data=data,
-            columns=columns,
-            units=units
-        )
+
 
 
 def test_get_bids_filename_minimal():
@@ -221,6 +208,9 @@ def test_to_metadata_dict_with_additional():
 def test_motion_data_with_1d_array():
     """Test MotionData with 1D data array."""
     data = np.random.randn(100)
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm")
+    ]
     
     motion = MotionData(
         subject_id="01",
@@ -229,12 +219,8 @@ def test_motion_data_with_1d_array():
         tracked_points_count=10,
         tracksys="optical",
         data=data,
-        columns=["x"],
-        units=["mm"],
-        channel_component=["x"],
-        channel_type=["POS"],
-        channel_tracked_point=["marker0"]
+        channels=channels
     )
     
     assert motion.data.shape == (100,)
-    assert motion.columns == ["x"]
+    assert motion.channels[0].name == "x"

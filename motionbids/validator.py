@@ -195,11 +195,11 @@ def validate_field_values(data: MotionData) -> List[str]:
     
     # Validate data array consistency if present
     if data.data is not None:
-        if data.columns is not None:
+        if data.channels is not None:
             n_cols = data.data.shape[1] if data.data.ndim > 1 else 1
-            if len(data.columns) != n_cols:
+            if len(data.channels) != n_cols:
                 errors.append(
-                    f"Number of columns ({len(data.columns)}) does not match "
+                    f"Number of channels ({len(data.channels)}) does not match "
                     f"data dimensions ({n_cols})"
                 )
         

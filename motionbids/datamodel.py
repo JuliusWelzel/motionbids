@@ -8,11 +8,7 @@ from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
 import numpy as np
 from dataclasses_json import dataclass_json
-from .bids_constants import (
-    ALLOWED_CHANNEL_COMPONENTS,
-    ALLOWED_CHANNEL_TYPES,
-    CHANNEL_TYPE_COMPONENT_REQUIREMENTS
-)
+from .channel import Channel
 
 
 @dataclass_json
@@ -25,19 +21,15 @@ class MotionData:
     along with the actual motion time series data.
     
     **Data Format:**
-    - `data`: NumPy array where **rows = timepoints** and **columns = channels**
-    - `columns`: List of channel names that **must match** the number of data columns
-    - `units`: List of units per channel that **must match** the length of `columns`
-    - The `columns` and `units` define the structure of the `*_channels.tsv` file
+    - `data`: NumPy array where **rows = timepoints** and **columns = channels** (REQUIRED)
+    - `channels`: List of Channel objects defining channel metadata (REQUIRED)
     
-    **Channel Metadata (for channels.tsv):**
-    If you want to explicitly provide channel metadata, you can use these fields.
-    All three must be provided together, and their lengths must match `columns`:
-    - `channel_component`: List of component values (e.g., 'x', 'y', 'z', 'quat_w', 'quat_x', 'n/a')
-    - `channel_type`: List of type values (e.g., 'POS', 'ORNT', 'VEL', 'ACCEL', 'GYRO', 'MAGN', 'MISC')
-    - `channel_tracked_point`: List of tracked point labels (e.g., 'marker0', 'head', 'pelvis')
+    The `channels` list follows the BIDS specification for channels.tsv files.
+    Each Channel object contains: name, component, type, tracked_point, units (all required),
+    plus optional fields like placement, reference_frame, description, sampling_frequency, status.
     
-    These will be validated against the BIDS schema during construction.
+    The number of Channel objects MUST match the number of columns in the data array.
+    Channel metadata is validated against BIDS schema during Channel construction.
     
     Required Fields (must be provided):
         subject_id: Subject identifier (BIDS entity 'sub')
@@ -61,22 +53,25 @@ class MotionData:
         acq_time: Acquisition time in ISO 8601 format with optional fractional seconds
                   (e.g., '2023-06-15T14:30:00' or '2023-06-15T14:30:00.123456')
                   Supports sub-millisecond precision. If provided, a scans.tsv file will be generated
-        data: NumPy array containing motion time series data (shape: n_timepoints × n_channels)
-        columns: List of column names for the TSV file (length must equal data.shape[1])
-        units: Units for each column (length must equal len(columns))
         additional_metadata: Dictionary for any additional custom metadata
     
     Example:
         >>> import numpy as np
+        >>> from motionbids.channel import Channel
         >>> data = np.random.randn(1000, 30)  # 1000 timepoints, 30 channels
+        >>> channels = [
+        ...     Channel(name=f"marker{i//3}_{ax}", component=ax, type="POS",
+        ...             tracked_point=f"marker{i//3}", units="mm")
+        ...     for i in range(30) for ax in ['x', 'y', 'z'] if i % 3 == ['x', 'y', 'z'].index(ax)
+        ... ]
         >>> motion = MotionData(
         ...     subject_id="01",
         ...     task_name="walk",
         ...     sampling_frequency=120.0,
         ...     tracked_points_count=10,
+        ...     tracksys="optical",
         ...     data=data,
-        ...     columns=[f"ch{i}" for i in range(30)],
-        ...     units=["mm"] * 30
+        ...     channels=channels
         ... )
     """
     
@@ -101,15 +96,9 @@ class MotionData:
     run: Optional[int] = None
     acq_time: Optional[str] = None  # ISO 8601 with optional fractional seconds (e.g., '2023-06-15T14:30:00.123456')
     
-    # Motion data
+    # Motion data (REQUIRED - have defaults to avoid field ordering issues, validated in __post_init__)
     data: Optional[np.ndarray] = field(default=None, repr=False)
-    columns: Optional[List[str]] = None
-    units: Optional[List[str]] = None
-    
-    # Channel metadata (for channels.tsv)
-    channel_component: Optional[List[str]] = None  # e.g., ['x', 'y', 'z', 'quat_w', ...]
-    channel_type: Optional[List[str]] = None  # e.g., ['POS', 'POS', 'POS', 'ORNT', ...]
-    channel_tracked_point: Optional[List[str]] = None  # e.g., ['marker0', 'marker0', 'marker0', 'head', ...]
+    channels: Optional[List[Channel]] = None
     
     # Additional metadata
     additional_metadata: Optional[Dict[str, Any]] = field(default_factory=dict)
@@ -125,98 +114,36 @@ class MotionData:
         if self.run is not None and self.run < 1:
             raise ValueError("run must be >= 1")
         
-        if self.data is not None:
-            if not isinstance(self.data, np.ndarray):
-                raise TypeError("data must be a numpy array")
-            
-            # Check if columns match data dimensions
-            if self.columns is not None:
-                if self.data.ndim == 1:
-                    expected_cols = 1
-                elif self.data.ndim == 2:
-                    expected_cols = self.data.shape[1]
-                else:
-                    raise ValueError("data must be 1D or 2D array")
-                
-                if len(self.columns) != expected_cols:
-                    raise ValueError(
-                        f"Number of columns ({len(self.columns)}) must match "
-                        f"data dimensions ({expected_cols})"
-                    )
-            
-            # Check if units match columns
-            if self.units is not None and self.columns is not None:
-                if len(self.units) != len(self.columns):
-                    raise ValueError(
-                        f"Number of units ({len(self.units)}) must match "
-                        f"number of columns ({len(self.columns)})"
-                    )
+        # Validate data is required and provided
+        if self.data is None:
+            raise ValueError("data is required - must provide a numpy array")
         
-        # Validate channel metadata if provided
-        if hasattr(self, 'channel_component') and self.channel_component is not None:
-            self._validate_channel_metadata()
+        if not isinstance(self.data, np.ndarray):
+            raise TypeError("data must be a numpy array")
+        
+        if self.data.ndim not in [1, 2]:
+            raise ValueError("data must be 1D or 2D array")
+        
+        # Validate channels is required and provided
+        if self.channels is None:
+            raise ValueError("channels is required - must provide a list of Channel objects")
+        
+        # Determine expected number of channels
+        if self.data.ndim == 1:
+            expected_channels = 1
+        else:
+            expected_channels = self.data.shape[1]
+        
+        # Validate channels list length matches data dimensions
+        if len(self.channels) != expected_channels:
+            raise ValueError(
+                f"Number of channels ({len(self.channels)}) must match "
+                f"data columns ({expected_channels})"
+            )
+        
+        # Channel validation happens in Channel.__post_init__
     
-    def _validate_channel_metadata(self):
-        """Validate that channel metadata fields are correctly structured."""
-        # Check that all three channel metadata fields are provided together
-        has_component = self.channel_component is not None
-        has_type = self.channel_type is not None
-        has_tracked_point = self.channel_tracked_point is not None
-        
-        if has_component or has_type or has_tracked_point:
-            if not (has_component and has_type and has_tracked_point):
-                raise ValueError(
-                    "If any channel metadata is provided, all three fields must be provided: "
-                    "channel_component, channel_type, and channel_tracked_point"
-                )
-        
-        # If channel metadata is provided, validate it
-        if self.channel_component is not None:
-            # Check lengths match
-            n_channels = len(self.channel_component)
-            if len(self.channel_type) != n_channels:
-                raise ValueError(
-                    f"channel_type length ({len(self.channel_type)}) must match "
-                    f"channel_component length ({n_channels})"
-                )
-            if len(self.channel_tracked_point) != n_channels:
-                raise ValueError(
-                    f"channel_tracked_point length ({len(self.channel_tracked_point)}) must match "
-                    f"channel_component length ({n_channels})"
-                )
-            
-            # Check lengths match columns if both are provided
-            if self.columns is not None and len(self.columns) != n_channels:
-                raise ValueError(
-                    f"Number of channel metadata entries ({n_channels}) must match "
-                    f"number of columns ({len(self.columns)})"
-                )
-            
-            # Validate each channel's component and type against BIDS schema
-            for i, (component, ch_type) in enumerate(zip(self.channel_component, self.channel_type)):
-                # Validate component
-                if component not in ALLOWED_CHANNEL_COMPONENTS:
-                    raise ValueError(
-                        f"Channel {i}: Invalid component '{component}'. "
-                        f"Must be one of: {sorted(ALLOWED_CHANNEL_COMPONENTS)}"
-                    )
-                
-                # Validate type (must be uppercase)
-                if ch_type not in ALLOWED_CHANNEL_TYPES:
-                    raise ValueError(
-                        f"Channel {i}: Invalid type '{ch_type}'. "
-                        f"Must be one of: {sorted(ALLOWED_CHANNEL_TYPES)}"
-                    )
-                
-                # Validate component-type compatibility
-                if ch_type in CHANNEL_TYPE_COMPONENT_REQUIREMENTS:
-                    allowed_components = CHANNEL_TYPE_COMPONENT_REQUIREMENTS[ch_type]
-                    if component not in allowed_components:
-                        raise ValueError(
-                            f"Channel {i}: Component '{component}' is not allowed for type '{ch_type}'. "
-                            f"Allowed components for {ch_type}: {sorted(allowed_components)}"
-                        )
-                
+
     
     def get_bids_filename(self, suffix: str = "motion", extension: str = "json") -> str:
         """

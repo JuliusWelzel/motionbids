@@ -8,6 +8,7 @@ import shutil
 from pathlib import Path
 import numpy as np
 from motionbids.datamodel import MotionData
+from motionbids.channel import Channel
 from motionbids.exporter import (
     export_bids_motion,
     export_json_metadata,
@@ -31,6 +32,11 @@ def temp_dir():
 def sample_motion_data():
     """Create sample MotionData for testing."""
     data = np.random.randn(100, 3)
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm"),
+        Channel(name="z", component="z", type="POS", tracked_point="marker0", units="mm")
+    ]
     return MotionData(
         subject_id="01",
         task_name="walk",
@@ -41,11 +47,7 @@ def sample_motion_data():
         manufacturers_model_name="Vantage",
         recording_duration=100/120.0,  # Match data length
         data=data,
-        columns=["x", "y", "z"],
-        units=["mm", "mm", "mm"],
-        channel_component=["x", "y", "z"],
-        channel_type=["POS", "POS", "POS"],
-        channel_tracked_point=["marker0", "marker0", "marker0"],
+        channels=channels
     )
 
 
@@ -96,12 +98,12 @@ def test_export_channels_tsv(temp_dir, sample_motion_data):
     
     # Check header has all required columns in correct order
     assert lines[0].strip() == "name\tcomponent\ttype\ttracked_point\tunits"
-    # Check first data row - now uses explicit channel metadata
+    # Check first data row - uses Channel objects
     parts = lines[1].strip().split('\t')
     assert parts[0] == "x"  # name
-    assert parts[1] == "x"  # component (from channel_component)
-    assert parts[2] == "POS"  # type (from channel_type)
-    assert parts[3] == "marker0"  # tracked_point (from channel_tracked_point)
+    assert parts[1] == "x"  # component
+    assert parts[2] == "POS"  # type
+    assert parts[3] == "marker0"  # tracked_point
     assert parts[4] == "mm"  # units
 
 
@@ -183,20 +185,21 @@ def test_export_bids_motion_create_dirs(temp_dir):
     assert files['json'].exists()
 
 
-def test_export_bids_motion_without_columns_fails(temp_dir):
-    """Test that export fails if data is present but columns are not."""
-    motion = MotionData(
-        subject_id="01",
-        task_name="rest",
-        tracksys="optical",
-        sampling_frequency=100.0,
-        tracked_points_count=10,
-        data=np.random.randn(100, 3)
-        # No columns specified
-    )
+def test_export_bids_motion_without_channels_fails(temp_dir):
+    """Test that export fails if data is present but channels are not."""
+    data = np.random.randn(100, 3)
     
-    with pytest.raises(ValueError, match="columns are not defined"):
-        export_bids_motion(motion, temp_dir)
+    with pytest.raises(ValueError, match="Number of channels"):
+        # Will fail in __post_init__ due to channel count mismatch
+        motion = MotionData(
+            subject_id="01",
+            task_name="rest",
+            tracksys="optical",
+            sampling_frequency=100.0,
+            tracked_points_count=10,
+            data=data,
+            channels=[]  # Empty channels list doesn't match data
+        )
 
 
 def test_create_bids_directory_structure(temp_dir):
@@ -259,6 +262,9 @@ def test_export_with_all_entities(temp_dir):
 
 def test_export_tsv_1d_data(temp_dir):
     """Test exporting 1D data array."""
+    channels = [
+        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm")
+    ]
     motion = MotionData(
         subject_id="01",
         task_name="rest",
@@ -266,11 +272,7 @@ def test_export_tsv_1d_data(temp_dir):
         sampling_frequency=100.0,
         tracked_points_count=10,
         data=np.random.randn(100),
-        columns=["x"],
-        units=["mm"],
-        channel_component=["x"],
-        channel_type=["POS"],
-        channel_tracked_point=["marker0"]
+        channels=channels
     )
     
     files = export_bids_motion(motion, temp_dir)
