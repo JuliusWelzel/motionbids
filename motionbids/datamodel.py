@@ -111,39 +111,37 @@ class MotionData:
         if self.tracked_points_count <= 0:
             raise ValueError("tracked_points_count must be positive")
         
-        if self.run is not None and self.run < 1:
-            raise ValueError("run must be >= 1")
-        
-        # Validate data is required and provided
-        if self.data is None:
-            raise ValueError("data is required - must provide a numpy array")
-        
-        if not isinstance(self.data, np.ndarray):
-            raise TypeError("data must be a numpy array")
-        
-        if self.data.ndim not in [1, 2]:
-            raise ValueError("data must be 1D or 2D array")
-        
-        # Validate channels is required and provided
-        if self.channels is None:
-            raise ValueError("channels is required - must provide a list of Channel objects")
-        
-        # Determine expected number of channels
-        if self.data.ndim == 1:
-            expected_channels = 1
-        else:
-            expected_channels = self.data.shape[1]
-        
-        # Validate channels list length matches data dimensions
-        if len(self.channels) != expected_channels:
-            raise ValueError(
-                f"Number of channels ({len(self.channels)}) must match "
-                f"data columns ({expected_channels})"
-            )
-        
-        # Channel validation happens in Channel.__post_init__
-    
-
+            if self.run is not None and self.run < 1:
+                raise ValueError("run must be >= 1")
+            
+            # Validate data and channels together - both required if either is provided
+            if self.data is not None or self.channels is not None:
+                if self.data is None:
+                    raise ValueError("data is required when channels are provided")
+                
+                if self.channels is None:
+                    raise ValueError("channels is required when data is provided")
+                
+                if not isinstance(self.data, np.ndarray):
+                    raise TypeError("data must be a numpy array")
+                
+                if self.data.ndim not in [1, 2]:
+                    raise ValueError("data must be 1D or 2D array")
+                
+                # Determine expected number of channels
+                if self.data.ndim == 1:
+                    expected_channels = 1
+                else:
+                    expected_channels = self.data.shape[1]
+                
+                # Validate channels list length matches data dimensions
+                if len(self.channels) != expected_channels:
+                    raise ValueError(
+                        f"Number of channels ({len(self.channels)}) must match "
+                        f"data columns ({expected_channels})"
+                    )
+                
+                # Channel validation happens in Channel.__post_init__
     
     def get_bids_filename(self, suffix: str = "motion", extension: str = "json") -> str:
         """
