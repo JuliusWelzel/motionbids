@@ -41,14 +41,14 @@ n_channels = n_markers * 3  # x, y, z for each marker
 data = np.random.randn(n_timepoints, n_channels)
 
 # Define channel metadata (REQUIRED for BIDS compliance)
-# Each channel needs: name, component, type, tracked_point, units
+# Each channel needs: channel_name, channel_component, channel_type, channel_tracked_point, channel_units
 channels = [
     Channel(
-        name=f"marker{i}_{axis}",
-        component=axis,
-        type="POS",
-        tracked_point=f"marker{i}",
-        units="mm"
+        channel_name=f"marker{i}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=f"marker{i}",
+        channel_units="mm"
     )
     for i in range(n_markers)
     for axis in ['x', 'y', 'z']
@@ -123,7 +123,7 @@ export_dataset_description(
     bids_root=bids_root,
     name="Motion Capture Study",
     authors=["Your Name"],
-    dataset_type="raw"
+    dataset_channel_type="raw"
 )
 
 # 3. Process each subject
@@ -251,11 +251,11 @@ columns = df.columns.tolist()
 n_markers = 10
 channels = [
     Channel(
-        name=columns[i],
-        component=['x', 'y', 'z'][i % 3],
-        type='POS',
-        tracked_point=f'marker{i // 3}',
-        units='mm'
+        channel_name=columns[i],
+        channel_component=['x', 'y', 'z'][i % 3],
+        channel_type='POS',
+        channel_tracked_point=f'marker{i // 3}',
+        channel_units='mm'
     )
     for i in range(len(columns))
 ]

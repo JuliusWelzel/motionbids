@@ -19,11 +19,11 @@ data = np.random.randn(1200, 32)
 # Define channels following BIDS schema
 channels = [
     Channel(
-        name=f"marker{i}_{axis}",
-        component=axis,
-        type="POS",
-        tracked_point=f"marker{i}",
-        units="mm"
+        channel_name=f"marker{i}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=f"marker{i}",
+        channel_units="mm"
     )
     for i in range(10)
     for axis in ['x', 'y', 'z']
@@ -111,11 +111,11 @@ Each channel requires BIDS-compliant metadata:
 from motionbids import Channel
 
 channel = Channel(
-    name="marker0_x",           # Channel name
-    component="x",              # x, y, z, quat_x, quat_y, quat_z, quat_w, n/a
-    type="POS",                 # POS, ORNT, VEL, ACCEL, GYRO, MAGN, etc.
-    tracked_point="marker0",    # Label of tracked point
-    units="mm"                  # Units (mm, m, rad, deg, etc.)
+    channel_name="marker0_x",           # Channel name
+    channel_component="x",              # x, y, z, quat_x, quat_y, quat_z, quat_w, n/a
+    channel_type="POS",                 # POS, ORNT, VEL, ACCEL, GYRO, MAGN, etc.
+    channel_tracked_point="marker0",    # Label of tracked point
+    channel_units="mm"                  # Units (mm, m, rad, deg, etc.)
 )
 ```
 

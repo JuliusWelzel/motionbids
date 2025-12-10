@@ -188,8 +188,8 @@ def test_validate_data_columns_mismatch():
     """Test that data channel mismatch is caught in __post_init__."""
     data = np.random.randn(100, 3)
     channels = [
-        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
-        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm")
+        Channel(channel_name="x", channel_component="x", channel_type="POS", channel_tracked_point="marker0", channel_units="mm"),
+        Channel(channel_name="y", channel_component="y", channel_type="POS", channel_tracked_point="marker0", channel_units="mm")
     ]  # Only 2 channels for 3D data
     
     # This should fail in __post_init__ when creating the MotionData object
@@ -209,9 +209,9 @@ def test_validate_data_duration_mismatch():
     """Test validation fails when data doesn't match recording duration."""
     data = np.random.randn(100, 3)  # 100 samples
     channels = [
-        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
-        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm"),
-        Channel(name="z", component="z", type="POS", tracked_point="marker0", units="mm")
+        Channel(channel_name="x", channel_component="x", channel_type="POS", channel_tracked_point="marker0", channel_units="mm"),
+        Channel(channel_name="y", channel_component="y", channel_type="POS", channel_tracked_point="marker0", channel_units="mm"),
+        Channel(channel_name="z", channel_component="z", channel_type="POS", channel_tracked_point="marker0", channel_units="mm")
     ]
     
     motion = MotionData(

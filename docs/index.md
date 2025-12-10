@@ -14,11 +14,11 @@ data = np.random.randn(1200, 30)
 # Define channels following BIDS schema
 channels = [
     Channel(
-        name=f"marker{i}_{axis}",
-        component=axis,
-        type="POS",
-        tracked_point=f"marker{i}",
-        units="mm"
+        channel_name=f"marker{i}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=f"marker{i}",
+        channel_units="mm"
     )
     for i in range(10)
     for axis in ['x', 'y', 'z']

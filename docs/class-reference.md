@@ -15,11 +15,11 @@ n_channels = n_markers * 3
 # Create channel metadata following BIDS schema
 channels = [
     Channel(
-        name=f"marker{i}_{axis}",
-        component=axis,
-        type="POS",
-        tracked_point=f"marker{i}",
-        units="mm"
+        channel_name=f"marker{i}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=f"marker{i}",
+        channel_units="mm"
     )
     for i in range(n_markers)
     for axis in ['x', 'y', 'z']

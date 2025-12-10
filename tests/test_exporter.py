@@ -32,9 +32,9 @@ def sample_motion_data():
     """Create sample MotionData for testing."""
     data = np.random.randn(100, 3)
     channels = [
-        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm"),
-        Channel(name="y", component="y", type="POS", tracked_point="marker0", units="mm"),
-        Channel(name="z", component="z", type="POS", tracked_point="marker0", units="mm")
+        Channel(channel_name="x", channel_component="x", channel_type="POS", channel_tracked_point="marker0", channel_units="mm"),
+        Channel(channel_name="y", channel_component="y", channel_type="POS", channel_tracked_point="marker0", channel_units="mm"),
+        Channel(channel_name="z", channel_component="z", channel_type="POS", channel_tracked_point="marker0", channel_units="mm")
     ]
     return MotionData(
         subject_id="01",
@@ -262,7 +262,7 @@ def test_export_with_all_entities(temp_dir):
 def test_export_tsv_1d_data(temp_dir):
     """Test exporting 1D data array."""
     channels = [
-        Channel(name="x", component="x", type="POS", tracked_point="marker0", units="mm")
+        Channel(channel_name="x", channel_component="x", channel_type="POS", channel_tracked_point="marker0", channel_units="mm")
     ]
     motion = MotionData(
         subject_id="01",

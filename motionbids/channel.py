@@ -40,11 +40,11 @@ class Channel:
     
     Example:
         >>> channel = Channel(
-        ...     name="marker0_x",
-        ...     component="x",
-        ...     type="POS",
-        ...     tracked_point="marker0",
-        ...     units="mm"
+        ...     channel_name="marker0_x",
+        ...     channel_component="x",
+        ...     channel_type="POS",
+        ...     channel_tracked_point="marker0",
+        ...     channel_units="mm"
         ... )
     
     Component-Type Compatibility:
@@ -54,50 +54,50 @@ class Channel:
     """
     
     # Required fields (MUST be in this order)
-    name: str
-    component: str
-    type: str
-    tracked_point: str
-    units: str
+    channel_name: str
+    channel_component: str
+    channel_type: str
+    channel_tracked_point: str
+    channel_units: str
     
     # Recommended fields
-    placement: Optional[str] = None
-    reference_frame: Optional[str] = None
-    description: Optional[str] = None
-    sampling_frequency: Optional[float] = None
-    status: Optional[str] = None
-    status_description: Optional[str] = None
+    channel_placement: Optional[str] = None
+    channel_reference_frame: Optional[str] = None
+    channel_description: Optional[str] = None
+    channel_sampling_frequency: Optional[float] = None
+    channel_status: Optional[str] = None
+    channel_status_description: Optional[str] = None
     
     def __post_init__(self):
         """Validate channel fields against BIDS schema."""
         # Validate component
-        if self.component not in ALLOWED_CHANNEL_COMPONENTS:
+        if self.channel_component not in ALLOWED_CHANNEL_COMPONENTS:
             raise ValueError(
-                f"Invalid component '{self.component}' for channel '{self.name}'. "
+                f"Invalid component '{self.channel_component}' for channel '{self.channel_name}'. "
                 f"Must be one of: {sorted(ALLOWED_CHANNEL_COMPONENTS)}"
             )
         
         # Validate type (must be uppercase)
-        if self.type not in ALLOWED_CHANNEL_TYPES:
+        if self.channel_type not in ALLOWED_CHANNEL_TYPES:
             raise ValueError(
-                f"Invalid type '{self.type}' for channel '{self.name}'. "
+                f"Invalid type '{self.channel_type}' for channel '{self.channel_name}'. "
                 f"Must be one of (uppercase required): {sorted(ALLOWED_CHANNEL_TYPES)}"
             )
         
         # Validate component-type compatibility
-        if self.type in CHANNEL_TYPE_COMPONENT_REQUIREMENTS:
-            allowed_components = CHANNEL_TYPE_COMPONENT_REQUIREMENTS[self.type]
-            if self.component not in allowed_components:
+        if self.channel_type in CHANNEL_TYPE_COMPONENT_REQUIREMENTS:
+            allowed_components = CHANNEL_TYPE_COMPONENT_REQUIREMENTS[self.channel_type]
+            if self.channel_component not in allowed_components:
                 raise ValueError(
-                    f"Component '{self.component}' is not allowed for type '{self.type}' "
-                    f"in channel '{self.name}'. "
-                    f"Allowed components for {self.type}: {sorted(allowed_components)}"
+                    f"Component '{self.channel_component}' is not allowed for type '{self.channel_type}' "
+                    f"in channel '{self.channel_name}'. "
+                    f"Allowed components for {self.channel_type}: {sorted(allowed_components)}"
                 )
         
         # Validate status if provided
-        if self.status is not None and self.status not in ["good", "bad", "n/a"]:
+        if self.channel_status is not None and self.channel_status not in ["good", "bad", "n/a"]:
             raise ValueError(
-                f"Invalid status '{self.status}' for channel '{self.name}'. "
+                f"Invalid status '{self.channel_status}' for channel '{self.channel_name}'. "
                 f"Must be one of: 'good', 'bad', 'n/a'"
             )
     
@@ -111,25 +111,25 @@ class Channel:
             Dictionary with channel data for TSV export
         """
         row = {
-            'name': self.name,
-            'component': self.component,
-            'type': self.type,
-            'tracked_point': self.tracked_point,
-            'units': self.units,
+            'name': self.channel_name,
+            'component': self.channel_component,
+            'type': self.channel_type,
+            'tracked_point': self.channel_tracked_point,
+            'units': self.channel_units,
         }
         
         # Add optional fields if present
-        if self.placement is not None:
-            row['placement'] = self.placement
-        if self.reference_frame is not None:
-            row['reference_frame'] = self.reference_frame
-        if self.description is not None:
-            row['description'] = self.description
-        if self.sampling_frequency is not None:
-            row['sampling_frequency'] = self.sampling_frequency
-        if self.status is not None:
-            row['status'] = self.status
-        if self.status_description is not None:
-            row['status_description'] = self.status_description
+        if self.channel_placement is not None:
+            row['placement'] = self.channel_placement
+        if self.channel_reference_frame is not None:
+            row['reference_frame'] = self.channel_reference_frame
+        if self.channel_description is not None:
+            row['description'] = self.channel_description
+        if self.channel_sampling_frequency is not None:
+            row['sampling_frequency'] = self.channel_sampling_frequency
+        if self.channel_status is not None:
+            row['status'] = self.channel_status
+        if self.channel_status_description is not None:
+            row['status_description'] = self.channel_status_description
         
         return row

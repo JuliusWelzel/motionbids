@@ -60,8 +60,8 @@ class MotionData:
         >>> from motionbids.channel import Channel
         >>> data = np.random.randn(1000, 30)  # 1000 timepoints, 30 channels
         >>> channels = [
-        ...     Channel(name=f"marker{i//3}_{ax}", component=ax, type="POS",
-        ...             tracked_point=f"marker{i//3}", units="mm")
+        ...     Channel(channel_name=f"marker{i//3}_{ax}", channel_component=ax, channel_type="POS",
+        ...             tracked_point=f"marker{i//3}", channel_units="mm")
         ...     for i in range(30) for ax in ['x', 'y', 'z'] if i % 3 == ['x', 'y', 'z'].index(ax)
         ... ]
         >>> motion = MotionData(
