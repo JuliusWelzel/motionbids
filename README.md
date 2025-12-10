@@ -55,7 +55,7 @@ bids_dataset/
 
 ## Installation
 
-**Not on PyPI**: This package is not yet published on PyPI. Install from source:
+**📦 Not on PyPI**: This package is not yet published on PyPI. Install from source:
 
 ```bash
 # Clone the repository
@@ -63,9 +63,12 @@ git clone https://github.com/JuliusWelzel/motionbids.git
 cd motionbids
 
 # Install with uv (recommended)
+uv venv  # Create virtual environment
 uv pip install -e .
 
 # Or with pip
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 

@@ -47,7 +47,15 @@ export_bids_motion(motion, out_dir="bids_dataset/")
 ```bash
 git clone https://github.com/JuliusWelzel/motionbids.git
 cd motionbids
+
+# With uv (recommended)
+uv venv  # Create virtual environment first
 uv pip install -e .
+
+# Or with pip
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -e .
 ```
 
 ## Features
