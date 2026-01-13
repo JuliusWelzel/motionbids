@@ -232,6 +232,7 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
         
         # Write each channel as a row using Channel.to_tsv_row()
         for channel in data.channels:
+            row_dict = channel.to_tsv_row()
             row_values = []
             row_dict = channel.to_tsv_row()
             for field in fields:

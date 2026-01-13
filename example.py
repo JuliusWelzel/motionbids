@@ -32,11 +32,11 @@ data = np.random.randn(n_timepoints, n_channels) * 10 + 100
 # Define channel metadata following BIDS specification
 channels = [
     Channel(
-        name=f"marker{i}_{axis}",
-        component=axis,
-        type="POS",
-        tracked_point=f"marker{i}",
-        units="mm"
+        channel_name=f"marker{i}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=f"marker{i}",
+        channel_units="mm"
     )
     for i in range(n_markers)
     for axis in ['x', 'y', 'z']
