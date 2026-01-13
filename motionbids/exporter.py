@@ -220,11 +220,12 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
         # Start with required fields
         fields = ['name', 'component', 'type', 'tracked_point', 'units']
         
-        # Check if any channel has optional fields
+        # Check if any channel has optional fields by converting to TSV rows
         optional_fields = ['placement', 'reference_frame', 'description', 
                           'sampling_frequency', 'status', 'status_description']
         for field in optional_fields:
-            if any(getattr(ch, field, None) is not None for ch in data.channels):
+            # Check if any channel has this optional field by converting to dict
+            if any(field in ch.to_tsv_row() for ch in data.channels):
                 fields.append(field)
         
         # Write header
@@ -232,9 +233,10 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
         
         # Write each channel as a row
         for channel in data.channels:
+            row_dict = channel.to_tsv_row()
             row_values = []
             for field in fields:
-                value = getattr(channel, field, None)
+                value = row_dict.get(field)
                 # Convert None to 'n/a' for TSV
                 row_values.append(str(value) if value is not None else 'n/a')
             f.write('\t'.join(row_values) + '\n')
