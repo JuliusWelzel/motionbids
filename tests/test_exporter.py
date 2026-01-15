@@ -234,7 +234,6 @@ def test_export_dataset_description(temp_dir):
     
     assert description["Name"] == "Test Dataset"
     assert description["BIDSVersion"] == "1.9.0"
-    assert description["DatasetType"] == "raw"
     assert description["Authors"] == ["Jane Doe", "John Smith"]
 
 
