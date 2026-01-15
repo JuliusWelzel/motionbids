@@ -63,3 +63,7 @@ bids_root/
 # uv
 .uv/
 uv.lock
+
+# JOSS paper draft
+paper.md
+paper.bib

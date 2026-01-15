@@ -22,8 +22,8 @@ from motionbids import (
 # =========================================================================
 # Simulate 10 tracked points with x, y, z coordinates (30 channels)
 n_markers = 10
+n_channels = n_markers * 3 # x, y, z for each marker
 n_timepoints = 1200  # 10 seconds at 120 Hz
-n_channels = n_markers * 3
 sampling_freq = 120.0
 
 # Generate sample data (rows=timepoints, columns=channels)
