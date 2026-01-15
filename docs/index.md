@@ -68,12 +68,14 @@ pip install -e .
 
 ## Supported Systems
 
-Works with any motion tracking technology:
+In general the goal of this package is to that data from any system can be converted to MOTION BIDS format:
 
 - **Optical**: Vicon, Optitrack, Qualisys
 - **IMU**: Xsens, APDM, Movella
 - **Video**: OpenPose, MediaPipe, DeepLabCut
 - **Other**: Custom tracking systems
+
+Some system might get a dedicated import function in the future, lloks out for the release notes.
 
 ## Output Structure
 
