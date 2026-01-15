@@ -10,6 +10,7 @@ from typing import Optional, Union
 import warnings
 
 from .datamodel import MotionData
+from .datautils import _is_pascal_case
 from .validator import validate_motion_data, ValidationWarning
 
 
@@ -455,9 +456,9 @@ def create_bids_directory_structure(
 def export_dataset_description(
     bids_root: Union[str, Path],
     name: str,
+    bids_version: str = "1.9.0",
     authors: Optional[list] = None,
-    dataset_type: str = "raw",
-    bids_version: str = "1.9.0"
+    **kwargs
 ) -> Path:
     """
     Create a dataset_description.json file for the BIDS dataset.
@@ -467,9 +468,11 @@ def export_dataset_description(
     Args:
         bids_root: Root directory of the BIDS dataset
         name: Name of the dataset
-        authors: List of dataset authors (optional)
-        dataset_type: Type of dataset (default: "raw")
         bids_version: BIDS version (default: "1.9.0")
+        authors: List of dataset authors (optional)
+        **kwargs: Additional fields to include in the dataset description
+                  (e.g., License, Acknowledgements, HowToAcknowledge,
+                  Funding, EthicsApprovals, ReferencesAndLinks, DatasetDOI)
     
     Returns:
         Path to the created dataset_description.json file
@@ -478,20 +481,35 @@ def export_dataset_description(
         >>> export_dataset_description(
         ...     "bids_root",
         ...     name="My Motion Study",
-        ...     authors=["Jane Doe", "John Smith"]
+        ...     authors=["Jane Doe", "John Smith"],
+        ...     License="CC0",
+        ...     Acknowledgements="Thanks to our participants"
         ... )
     """
     bids_root = Path(bids_root)
     output_path = bids_root / "dataset_description.json"
     
+    # Check if kwargs keys are in PascalCase and warn if not
+    for key in kwargs.keys():
+        if not _is_pascal_case(key):
+            warnings.warn(
+                f"Key '{key}' in dataset_description is not in PascalCase. "
+                f"BIDS recommends PascalCase for metadata keys (e.g., 'License', 'Funding').",
+                UserWarning
+            )
+    
     description = {
         "Name": name,
         "BIDSVersion": bids_version,
-        "DatasetType": dataset_type,
     }
     
     if authors:
         description["Authors"] = authors
+    
+    # Add any additional fields from kwargs
+    for key, value in kwargs.items():
+        if value is not None:
+            description[key] = value
     
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(description, f, indent=2, ensure_ascii=False)
