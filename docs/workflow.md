@@ -220,6 +220,21 @@ filename                                                  acq_time
 motion/sub-01_ses-01_task-walk_tracksys-optical_motion.json  2025-11-05T14:30:00
 ```
 
+### 5. Dataset Description (`dataset_description.json`)
+Create a dataset description with additional fields:
+```python
+from motionbids import export_dataset_description
+
+export_dataset_description(
+    bids_root="my_motion_study",
+    name="Motion Capture Study",
+    authors=["Jane Doe", "John Smith"],
+    License="CC0",
+    Acknowledgements="Thanks to our participants",
+    Funding=["NIH Grant 12345"]
+)
+```
+
 ## Common Patterns
 
 ### Multiple Runs
@@ -323,6 +338,10 @@ except ValidationError as e:
 - ✅ Component values validated: `x`, `y`, `z`, `quat_x`, `quat_y`, `quat_z`, `quat_w`, `n/a`
 - ✅ Type values validated (uppercase): `POS`, `ORNT`, `VEL`, `ACCEL`, `GYRO`, `ANGACCEL`, `MAGN`, `JNTANG`, `LATENCY`, `MISC`
 - ✅ Component-type compatibility checked (e.g., quaternion components only allowed with `ORNT` type)
+
+#### Channel Export Validation
+- ✅ **Required fields check**: On export, channels are validated to have all required BIDS fields (`name`, `component`, `type`, `tracked_point`, `units`). Export will fail with a `ValueError` if any required field is missing.
+- ⚠️ **Unknown fields warning**: If a channel contains fields not in the required or optional BIDS specification, a `ValidationWarning` is raised.
 
 !!! info "Channel Metadata Required"
     You **must** provide explicit channel metadata (`channel_component`, `channel_type`, `channel_tracked_point`) when creating a MotionData object with data. These are validated during construction to ensure BIDS compliance. All three fields must be provided together and match the length of your `columns` list.
