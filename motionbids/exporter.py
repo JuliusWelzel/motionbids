@@ -214,15 +214,40 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
     if not data.channels:
         raise ValueError("Channels list must be defined to export channels.tsv")
     
+    # Define required and optional fields
+    required_fields = ['name', 'component', 'type', 'tracked_point', 'units']
+    optional_fields = ['placement', 'reference_frame', 'description', 
+                      'sampling_frequency', 'status', 'status_description']
+    all_known_fields = set(required_fields + optional_fields)
+    
+    # Validate channels before writing
+    for i, channel in enumerate(data.channels):
+        row_dict = channel.to_tsv_row()
+        
+        # Check if all required fields are present
+        missing_required = [f for f in required_fields if f not in row_dict or row_dict[f] is None]
+        if missing_required:
+            raise ValueError(
+                f"Channel {i} is missing required fields: {missing_required}. "
+                f"All channels.tsv files MUST have: {required_fields}"
+            )
+        
+        # Warn about unknown fields
+        unknown_fields = [f for f in row_dict.keys() if f not in all_known_fields]
+        if unknown_fields:
+            warnings.warn(
+                f"Channel {i} contains unknown fields: {unknown_fields}. "
+                f"These fields are not in the required ({required_fields}) or "
+                f"optional ({optional_fields}) BIDS fields.",
+                ValidationWarning
+            )
+    
     # Write channels.tsv with BIDS-required columns
     with open(output_path, 'w', encoding='utf-8') as f:
-        # Get all fields from first channel to determine what columns to include
         # Start with required fields
-        fields = ['name', 'component', 'type', 'tracked_point', 'units']
+        fields = required_fields.copy()
         
         # Check if any channel has optional fields using Channel.to_tsv_row()
-        optional_fields = ['placement', 'reference_frame', 'description', 
-                          'sampling_frequency', 'status', 'status_description']
         for field in optional_fields:
             if any(field in ch.to_tsv_row() for ch in data.channels):
                 fields.append(field)
@@ -234,7 +259,6 @@ def export_channels_tsv(data: MotionData, output_path: Union[str, Path]) -> Path
         for channel in data.channels:
             row_dict = channel.to_tsv_row()
             row_values = []
-            row_dict = channel.to_tsv_row()
             for field in fields:
                 value = row_dict.get(field)
                 # Convert None to 'n/a' for TSV
