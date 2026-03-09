@@ -112,7 +112,8 @@ from motionbids import (
     MotionData,
     export_bids_motion,
     create_bids_directory_structure,
-    export_dataset_description
+    export_dataset_description,
+    export_participants_tsv,
 )
 
 # 1. Setup BIDS root directory
@@ -128,6 +129,9 @@ export_dataset_description(
 
 # 3. Process each subject
 for subject_id in ["01", "02", "03"]:
+    # Record participant demographics
+    export_participants_tsv(bids_root, participant_id=subject_id, age="25", sex="F")
+
     for session_id in ["01", "02"]:
         # Create directory structure
         motion_dir = create_bids_directory_structure(
@@ -163,6 +167,7 @@ print(f"✓ Dataset created at {bids_root}")
 ```
 my_motion_study/
 ├── dataset_description.json
+├── participants.tsv
 ├── sub-01/
 │   ├── sub-01_ses-01_scans.tsv
 │   ├── sub-01_ses-02_scans.tsv
@@ -234,6 +239,45 @@ export_dataset_description(
     Funding=["NIH Grant 12345"]
 )
 ```
+
+### 6. Participants File (`participants.tsv`)
+Store participant information. The file is created or updated automatically —
+existing entries for other participants are preserved:
+```python
+from motionbids import export_participants_tsv
+
+# Create / append participant entries
+export_participants_tsv(
+    bids_root="my_motion_study",
+    participant_id="01",
+    age="25",
+    sex="F",
+    handedness="R",
+    group="control"        # extra columns are supported via **kwargs
+)
+
+# A second call appends a new row (or updates if the participant already exists)
+export_participants_tsv(
+    bids_root="my_motion_study",
+    participant_id="02",
+    age="30",
+    sex="M",
+    handedness="L",
+    group="patient"
+)
+```
+
+Output (`participants.tsv`):
+```
+participant_id	age	sex	handedness	group
+sub-01	25	F	R	control
+sub-02	30	M	L	patient
+```
+
+!!! note
+    If `participants.tsv` already exists (e.g., from a prior EEG conversion),
+    a `UserWarning` is emitted. Existing rows are preserved; only the row for
+    the given `participant_id` is added or updated.
 
 ## Common Patterns
 

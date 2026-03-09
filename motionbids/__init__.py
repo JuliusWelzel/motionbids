@@ -54,6 +54,7 @@ from .exporter import (
     export_scans_tsv,
     create_bids_directory_structure,
     export_dataset_description,
+    export_participants_tsv,
 )
 
 # Optional: Schema utilities (users typically won't need these directly)
@@ -86,6 +87,7 @@ __all__ = [
     "export_scans_tsv",
     "create_bids_directory_structure",
     "export_dataset_description",
+    "export_participants_tsv",
     
     # Schema utilities module (advanced usage)
     "schema_utils",

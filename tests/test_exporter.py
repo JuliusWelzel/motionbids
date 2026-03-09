@@ -15,6 +15,7 @@ from motionbids.exporter import (
     export_channels_tsv,
     create_bids_directory_structure,
     export_dataset_description,
+    export_participants_tsv,
     _parse_channel_name,
 )
 
@@ -332,3 +333,116 @@ def test_parse_channel_name_unparseable():
     assert component == "n/a"
     assert tracked_point == "unknown_channel"
     assert channel_type == "POS"
+
+
+# ---- export_participants_tsv tests ----
+
+def test_export_participants_tsv_creates_new_file(temp_dir):
+    """Test creating a new participants.tsv from scratch."""
+    output_path = export_participants_tsv(
+        temp_dir, participant_id="01", age="25", sex="F", handedness="R"
+    )
+
+    assert output_path.exists()
+    assert output_path == temp_dir / "participants.tsv"
+
+    with open(output_path, "r") as f:
+        lines = f.readlines()
+
+    assert lines[0].strip() == "participant_id\tage\tsex\thandedness"
+    parts = lines[1].strip().split("\t")
+    assert parts[0] == "sub-01"
+    assert parts[1] == "25"
+    assert parts[2] == "F"
+    assert parts[3] == "R"
+
+
+def test_export_participants_tsv_auto_prefix(temp_dir):
+    """Test that participant_id is automatically prefixed with sub-."""
+    export_participants_tsv(temp_dir, participant_id="03")
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+    assert lines[1].strip().startswith("sub-03")
+
+
+def test_export_participants_tsv_already_prefixed(temp_dir):
+    """Test that sub- prefix is not duplicated."""
+    export_participants_tsv(temp_dir, participant_id="sub-05")
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+    assert lines[1].strip().startswith("sub-05")
+
+
+def test_export_participants_tsv_append(temp_dir):
+    """Test appending a second participant to an existing file."""
+    export_participants_tsv(temp_dir, participant_id="01", age="25", sex="F")
+    export_participants_tsv(temp_dir, participant_id="02", age="30", sex="M")
+
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+
+    assert len(lines) == 3  # header + 2 participants
+    assert "sub-01" in lines[1]
+    assert "sub-02" in lines[2]
+
+
+def test_export_participants_tsv_update_existing(temp_dir):
+    """Test updating an existing participant entry."""
+    export_participants_tsv(temp_dir, participant_id="01", age="25")
+    export_participants_tsv(temp_dir, participant_id="01", age="26")
+
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+
+    # Should still be 2 lines (header + 1 participant), not duplicated
+    assert len(lines) == 2
+    assert "26" in lines[1]
+
+
+def test_export_participants_tsv_extra_columns(temp_dir):
+    """Test adding custom extra columns via kwargs."""
+    export_participants_tsv(
+        temp_dir, participant_id="01", age="25", group="control"
+    )
+
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+
+    header_cols = lines[0].strip().split("\t")
+    assert "group" in header_cols
+    parts = lines[1].strip().split("\t")
+    assert parts[header_cols.index("group")] == "control"
+
+
+def test_export_participants_tsv_new_column_on_update(temp_dir):
+    """Test that new columns are merged when updating an existing file."""
+    export_participants_tsv(temp_dir, participant_id="01", age="25")
+    export_participants_tsv(temp_dir, participant_id="02", age="30", group="patient")
+
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+
+    header_cols = lines[0].strip().split("\t")
+    assert "group" in header_cols
+    # First participant should have n/a for the new column
+    parts_01 = lines[1].strip().split("\t")
+    assert parts_01[header_cols.index("group")] == "n/a"
+
+
+def test_export_participants_tsv_warns_on_existing(temp_dir):
+    """Test that a warning is issued when the file already exists."""
+    export_participants_tsv(temp_dir, participant_id="01")
+
+    with pytest.warns(UserWarning, match="participants.tsv already exists"):
+        export_participants_tsv(temp_dir, participant_id="02")
+
+
+def test_export_participants_tsv_minimal(temp_dir):
+    """Test creating participants.tsv with only participant_id."""
+    export_participants_tsv(temp_dir, participant_id="99")
+
+    with open(temp_dir / "participants.tsv", "r") as f:
+        lines = f.readlines()
+
+    assert lines[0].strip() == "participant_id"
+    assert lines[1].strip() == "sub-99"

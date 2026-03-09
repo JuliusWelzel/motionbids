@@ -222,6 +222,48 @@ filename                                                  acq_time
 motion/sub-01_ses-01_task-walk_tracksys-optical_motion.json  2025-11-05T14:30:00
 ```
 
+### Participants File
+
+Use `export_participants_tsv` to create or update a `participants.tsv` at the
+dataset root. Existing entries for other participants are preserved.
+
+```python
+from motionbids import export_participants_tsv
+
+export_participants_tsv(
+    bids_root="my_study",
+    participant_id="01",   # "sub-" prefix added automatically
+    age="25",
+    sex="F",
+    handedness="R",
+    group="control"        # extra columns via **kwargs
+)
+```
+
+**Creates / updates: `participants.tsv`**
+```
+participant_id	age	sex	handedness	group
+sub-01	25	F	R	control
+```
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `bids_root` | `str \| Path` | Dataset root directory |
+| `participant_id` | `str` | Subject ID (auto-prefixed with `sub-`) |
+| `age` | `str` (optional) | Participant age |
+| `sex` | `str` (optional) | `"M"`, `"F"`, or `"O"` |
+| `handedness` | `str` (optional) | `"L"`, `"R"`, or `"A"` |
+| `**kwargs` | | Additional columns (e.g., `group="control"`) |
+
+**Behaviour:**
+
+- If `participants.tsv` does not exist → creates file with header + row.
+- If it exists and the participant is new → appends a row.
+- If it exists and the participant already has a row → updates that row.
+- A `UserWarning` is emitted when the file already exists.
+
 ## Class Methods
 
 ### `get_bids_filename(suffix, extension)`

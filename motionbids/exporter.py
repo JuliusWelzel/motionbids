@@ -516,3 +516,118 @@ def export_dataset_description(
         f.write('\n')
     
     return output_path
+
+
+def export_participants_tsv(
+    bids_root: Union[str, Path],
+    participant_id: str,
+    age: Optional[str] = None,
+    sex: Optional[str] = None,
+    handedness: Optional[str] = None,
+    **kwargs
+) -> Path:
+    """
+    Export or update a participants.tsv file in the BIDS dataset root.
+
+    If participants.tsv already exists, the participant entry is appended
+    or updated (matched by participant_id). If the file does not exist, it
+    is created with a header row.
+
+    The ``participant_id`` value is stored in the ``participant_id`` column
+    and is automatically prefixed with ``sub-`` if not already present.
+
+    Args:
+        bids_root: Root directory of the BIDS dataset
+        participant_id: Subject identifier (e.g., "01" or "sub-01")
+        age: Age of the participant (string, e.g., "25" or "25-30")
+        sex: Sex of the participant ("M", "F", or "O")
+        handedness: Handedness ("L", "R", "A" for ambidextrous)
+        **kwargs: Additional columns to include (e.g., group="control")
+
+    Returns:
+        Path to the created/updated participants.tsv file
+
+    Reference:
+        https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files/participant-key-records.html
+
+    Example:
+        >>> export_participants_tsv(
+        ...     "bids_root", participant_id="01",
+        ...     age="25", sex="F", handedness="R", group="control"
+        ... )
+    """
+    bids_root = Path(bids_root)
+    output_path = bids_root / "participants.tsv"
+
+    # Normalise participant_id to include "sub-" prefix
+    if not participant_id.startswith("sub-"):
+        participant_id = f"sub-{participant_id}"
+
+    # Build the ordered set of columns.
+    # "participant_id" is always first (BIDS requirement).
+    base_columns = ["participant_id"]
+    base_values: dict[str, str] = {"participant_id": participant_id}
+
+    for col, val in [("age", age), ("sex", sex), ("handedness", handedness)]:
+        if val is not None:
+            base_columns.append(col)
+            base_values[col] = val
+
+    for col, val in kwargs.items():
+        if val is not None:
+            base_columns.append(col)
+            base_values[col] = str(val)
+
+    file_exists = output_path.exists()
+
+    if file_exists:
+        warnings.warn(
+            f"participants.tsv already exists at '{output_path}'. "
+            "Existing entries for other participants will be preserved; "
+            "an entry for this participant will be added or updated.",
+            UserWarning,
+        )
+
+        with open(output_path, "r", encoding="utf-8") as f:
+            existing_lines = f.readlines()
+
+        # Parse existing header
+        header_cols = existing_lines[0].strip().split("\t")
+
+        # Merge any new columns that don't already exist
+        for col in base_columns:
+            if col not in header_cols:
+                header_cols.append(col)
+
+        # Rebuild rows as list-of-dicts
+        rows: list[dict[str, str]] = []
+        entry_found = False
+        for line in existing_lines[1:]:
+            if not line.strip():
+                continue
+            parts = line.strip().split("\t")
+            row = {header_cols[i]: (parts[i] if i < len(parts) else "n/a")
+                   for i in range(len(header_cols))}
+            if row.get("participant_id") == participant_id:
+                # Update existing entry
+                for col in base_columns:
+                    row[col] = base_values.get(col, "n/a")
+                entry_found = True
+            rows.append(row)
+
+        if not entry_found:
+            new_row = {col: "n/a" for col in header_cols}
+            new_row.update(base_values)
+            rows.append(new_row)
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\t".join(header_cols) + "\n")
+            for row in rows:
+                f.write("\t".join(row.get(col, "n/a") for col in header_cols) + "\n")
+    else:
+        bids_root.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\t".join(base_columns) + "\n")
+            f.write("\t".join(base_values.get(col, "n/a") for col in base_columns) + "\n")
+
+    return output_path
