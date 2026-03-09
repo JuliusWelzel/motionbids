@@ -510,6 +510,14 @@ def export_dataset_description(
     for key, value in kwargs.items():
         if value is not None:
             description[key] = value
+
+    # check if file exists and warn if it does
+    if output_path.exists():
+        warnings.warn(
+            f"dataset_description.json already exists at '{output_path}'. "
+            "Existing file will be overwritten.",
+            UserWarning
+        )
     
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(description, f, indent=2, ensure_ascii=False)
