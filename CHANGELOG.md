@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-04-07
+
+### Changed
+
+- Package is now available on PyPI (`pip install motionbids`)
+- Updated installation instructions across README and docs
+- Added PyPI version badge to README
+
+### Added
+
+- Import examples for CSV, C3D (ezc3d), and IMU data in README and workflow docs
+
 ## [0.2.0] - 2026-03-09
 
 ### Added

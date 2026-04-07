@@ -4,20 +4,22 @@ This guide demonstrates a full workflow from raw motion data to a BIDS-compliant
 
 ## Installation
 
-> **Note**: This package is not yet published on PyPI. Install from source:
+```bash
+pip install motionbids
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv pip install motionbids
+```
+
+For development:
 
 ```bash
 git clone https://github.com/JuliusWelzel/motionbids.git
 cd motionbids
-
-# With uv (recommended)
-uv venv  # Create virtual environment first
-uv pip install -e .
-
-# Or with pip
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ## Basic Workflow
@@ -325,6 +327,91 @@ motion = MotionData(
     tracksys="optical",
     sampling_frequency=120.0,
     tracked_points_count=10,
+    data=data,
+    channels=channels
+)
+```
+
+### Loading from C3D (requires ezc3d)
+
+```python
+import ezc3d
+import numpy as np
+from motionbids import MotionData, Channel
+
+c3d = ezc3d.c3d("recording.c3d")
+points = c3d["data"]["points"]  # (4, n_markers, n_frames)
+labels = c3d["parameters"]["POINT"]["LABELS"]["value"]
+freq = c3d["parameters"]["POINT"]["RATE"]["value"][0]
+
+# Reshape to (n_frames, n_channels)
+data = points[:3, :, :].transpose(2, 1, 0).reshape(-1, len(labels) * 3)
+
+channels = [
+    Channel(
+        channel_name=f"{label}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=label,
+        channel_units="mm"
+    )
+    for label in labels
+    for axis in ["x", "y", "z"]
+]
+
+motion = MotionData(
+    subject_id="01",
+    task_name="walk",
+    tracksys="optical",
+    sampling_frequency=freq,
+    tracked_points_count=len(labels),
+    data=data,
+    channels=channels
+)
+```
+
+### Loading IMU Data
+
+```python
+import numpy as np
+from motionbids import MotionData, Channel
+
+# Example: 2 IMU sensors with accelerometer + gyroscope
+sensors = ["left_wrist", "right_wrist"]
+acc_axes = ["x", "y", "z"]
+gyro_axes = ["x", "y", "z"]
+
+# Load your IMU data (rows=time, cols=channels)
+# Expected column order: sensor1_acc_x, sensor1_acc_y, sensor1_acc_z,
+#                        sensor1_gyro_x, ..., sensor2_acc_x, ...
+data = np.random.randn(6000, len(sensors) * 6)  # 60s at 100 Hz
+
+channels = []
+for sensor in sensors:
+    for axis in acc_axes:
+        channels.append(Channel(
+            channel_name=f"{sensor}_ACCEL_{axis}",
+            channel_component=axis,
+            channel_type="ACCEL",
+            channel_tracked_point=sensor,
+            channel_units="m/s^2"
+        ))
+    for axis in gyro_axes:
+        channels.append(Channel(
+            channel_name=f"{sensor}_GYRO_{axis}",
+            channel_component=axis,
+            channel_type="GYRO",
+            channel_tracked_point=sensor,
+            channel_units="rad/s"
+        ))
+
+motion = MotionData(
+    subject_id="01",
+    task_name="walk",
+    tracksys="imu",
+    sampling_frequency=100.0,
+    tracked_points_count=len(sensors),
+    manufacturer="Xsens",
     data=data,
     channels=channels
 )

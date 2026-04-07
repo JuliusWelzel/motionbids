@@ -41,21 +41,22 @@ export_bids_motion(motion, out_dir="bids_dataset/")
 
 ## Installation
 
-!!! note "Not on PyPI"
-    This package is not yet published on PyPI. Install from source:
+```bash
+pip install motionbids
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv pip install motionbids
+```
+
+For development:
 
 ```bash
 git clone https://github.com/JuliusWelzel/motionbids.git
 cd motionbids
-
-# With uv (recommended)
-uv venv  # Create virtual environment first
-uv pip install -e .
-
-# Or with pip
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ## Features
@@ -128,6 +129,12 @@ your-study/
     [:octicons-arrow-right-24: Field reference](schema-fields.md)
 
 </div>
+
+## Importing Data
+
+`motionbids` focuses on **exporting** to BIDS format. Since motion capture systems vary widely,
+importing raw data is left to the user. The [Workflow Guide](workflow.md) includes examples for
+loading data from CSV, C3D, and IMU sensors.
 
 ## Citation
 

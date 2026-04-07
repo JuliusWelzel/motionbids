@@ -1,5 +1,6 @@
 # motionbids
 
+[![PyPI](https://img.shields.io/pypi/v/motionbids.svg)](https://pypi.org/project/motionbids/)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/JuliusWelzel/motionbids/actions/workflows/tests.yml/badge.svg)](https://github.com/JuliusWelzel/motionbids/actions/workflows/tests.yml)
@@ -55,21 +56,22 @@ bids_dataset/
 
 ## Installation
 
-**📦 Not on PyPI**: This package is not yet published on PyPI. Install from source:
+```bash
+pip install motionbids
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-# Clone the repository
+uv pip install motionbids
+```
+
+For development:
+
+```bash
 git clone https://github.com/JuliusWelzel/motionbids.git
 cd motionbids
-
-# Install with uv (recommended)
-uv venv  # Create virtual environment
-uv pip install -e .
-
-# Or with pip
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ## Features
@@ -170,13 +172,83 @@ Works with any motion tracking technology:
 - **Video**: OpenPose, MediaPipe, DeepLabCut
 - **Other**: Custom systems
 
+## Importing Data
+
+`motionbids` focuses on **exporting** to BIDS format. Importing raw data is left
+to the user since motion capture systems vary widely. Here are common patterns:
+
+### From CSV / TSV
+
+```python
+import pandas as pd
+import numpy as np
+from motionbids import MotionData, Channel
+
+# Load your data
+df = pd.read_csv("recording.csv")
+data = df.values
+
+# Map columns to BIDS channels
+channels = [
+    Channel(
+        channel_name=col,
+        channel_component=col.split("_")[-1],  # e.g. "x", "y", "z"
+        channel_type="POS",
+        channel_tracked_point=col.rsplit("_", 1)[0],
+        channel_units="mm"
+    )
+    for col in df.columns
+]
+
+motion = MotionData(
+    subject_id="01", task_name="walk", tracksys="optical",
+    sampling_frequency=120.0, tracked_points_count=10,
+    data=data, channels=channels
+)
+```
+
+### From C3D (requires ezc3d)
+
+```python
+import ezc3d
+import numpy as np
+from motionbids import MotionData, Channel
+
+c3d = ezc3d.c3d("recording.c3d")
+points = c3d["data"]["points"]  # (4, n_markers, n_frames)
+labels = c3d["parameters"]["POINT"]["LABELS"]["value"]
+freq = c3d["parameters"]["POINT"]["RATE"]["value"][0]
+
+# Reshape to (n_frames, n_channels)
+data = points[:3, :, :].transpose(2, 1, 0).reshape(-1, len(labels) * 3)
+
+channels = [
+    Channel(
+        channel_name=f"{label}_{axis}",
+        channel_component=axis,
+        channel_type="POS",
+        channel_tracked_point=label,
+        channel_units="mm"
+    )
+    for label in labels
+    for axis in ["x", "y", "z"]
+]
+
+motion = MotionData(
+    subject_id="01", task_name="walk", tracksys="optical",
+    sampling_frequency=freq, tracked_points_count=len(labels),
+    data=data, channels=channels
+)
+```
+
+See the [Workflow Guide](https://juliuswelzel.github.io/motionbids/workflow/) for more patterns.
+
 ## Development
 
 ```bash
-# Clone and install
 git clone https://github.com/juliuswelzel/motionbids.git
 cd motionbids
-uv pip install -e ".[dev]"
+pip install -e ".[dev]"
 
 # Run tests
 pytest --cov=motionbids
