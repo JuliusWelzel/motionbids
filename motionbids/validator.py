@@ -4,9 +4,13 @@ Validation utilities for BIDS-compliant motion data.
 This module provides functions to validate MotionData instances against
 BIDS requirements and recommendations.
 """
+from __future__ import annotations
+
 import warnings
-from typing import List, Set, Tuple
-from .datamodel import MotionData
+from typing import TYPE_CHECKING, List, Set, Tuple
+
+if TYPE_CHECKING:
+    from .datamodel_dynamic import MotionData
 
 
 # Define required fields based on BIDS specification for motion data

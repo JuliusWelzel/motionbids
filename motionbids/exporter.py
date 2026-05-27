@@ -4,14 +4,18 @@ Export utilities for writing BIDS-compliant motion data files.
 This module provides functions to export MotionData instances to
 BIDS-formatted JSON and TSV files.
 """
+from __future__ import annotations
+
 import json
 from pathlib import Path
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 import warnings
 
-from .datamodel import MotionData
 from .datautils import _is_pascal_case
 from .validator import validate_motion_data, ValidationWarning
+
+if TYPE_CHECKING:
+    from .datamodel_dynamic import MotionData
 
 
 def export_bids_motion(
@@ -319,17 +323,21 @@ def export_scans_tsv(
         # Read existing file to check if this entry already exists
         with open(output_path, 'r', encoding='utf-8') as f:
             existing_lines = f.readlines()
-        
-        # Check if this filename already exists
-        entry_exists = any(relative_path in line for line in existing_lines[1:])  # Skip header
-        
+
+        # Match on the filename column (first TSV field), not a substring of
+        # the whole row — otherwise prefix collisions (e.g. run-01 vs run-10)
+        # would be treated as the same entry.
+        def _row_matches(line: str) -> bool:
+            return line.split('\t', 1)[0] == relative_path
+
+        entry_exists = any(_row_matches(line) for line in existing_lines[1:])
+
         if entry_exists:
             # Update existing entry
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(existing_lines[0])  # Write header
                 for line in existing_lines[1:]:
-                    if relative_path in line:
-                        # Replace with new entry
+                    if _row_matches(line):
                         f.write(f'{relative_path}\t{data.acq_time}\n')
                     else:
                         f.write(line)
@@ -345,73 +353,6 @@ def export_scans_tsv(
     
     return output_path
 
-
-def _parse_channel_name(channel_name: str) -> tuple[str, str, str]:
-    """
-    Parse a channel name to extract component, tracked_point, and type.
-
-    This is a best-effort parser used when explicit channel metadata is not
-    provided. It supports common naming patterns such as:
-    - marker0_x, point1_y -> position components
-    - marker0_quat_w -> quaternion orientation
-    - sensor1_roll -> Euler angles
-    - marker0_vx, marker0_ax -> velocity/acceleration
-
-    Returns (component, tracked_point, channel_type).
-    """
-    # Default values
-    component = "n/a"
-    tracked_point = channel_name
-    channel_type = "POS"
-
-    parts = channel_name.split('_')
-
-    if len(parts) >= 2:
-        last_part = parts[-1].lower()
-
-        # Position axes
-        if last_part in ['x', 'y', 'z']:
-            component = last_part
-            channel_type = "POS"
-            tracked_point = '_'.join(parts[:-1])
-
-        # Quaternion components (e.g., quat_w)
-        elif len(parts) >= 2 and parts[-2].lower() == 'quat' and last_part in ['x', 'y', 'z', 'w']:
-            component = f"quat_{last_part}"
-            channel_type = "ORNT"
-            tracked_point = '_'.join(parts[:-2])
-
-        # Euler angles (roll/pitch/yaw)
-        elif last_part in ['roll', 'pitch', 'yaw']:
-            component = last_part
-            channel_type = "ORNT"
-            tracked_point = '_'.join(parts[:-1])
-
-        # Velocity (vx, vy, vz) -> component 'vx' etc.
-        elif len(last_part) == 2 and last_part[0] == 'v' and last_part[1] in ['x', 'y', 'z']:
-            component = last_part
-            channel_type = "VEL"
-            tracked_point = '_'.join(parts[:-1])
-
-        # Acceleration (ax, ay, az)
-        elif len(last_part) == 2 and last_part[0] == 'a' and last_part[1] in ['x', 'y', 'z']:
-            component = last_part
-            channel_type = "ACCEL"
-            tracked_point = '_'.join(parts[:-1])
-
-        # Gyroscope (gx, gy, gz)
-        elif len(last_part) == 2 and last_part[0] == 'g' and last_part[1] in ['x', 'y', 'z']:
-            component = last_part
-            channel_type = "GYRO"
-            tracked_point = '_'.join(parts[:-1])
-
-        # Magnetometer (mx, my, mz)
-        elif len(last_part) == 2 and last_part[0] == 'm' and last_part[1] in ['x', 'y', 'z']:
-            component = last_part
-            channel_type = "MAGN"
-            tracked_point = '_'.join(parts[:-1])
-
-    return component, tracked_point, channel_type
 
 def create_bids_directory_structure(
     base_dir: Union[str, Path],

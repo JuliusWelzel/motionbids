@@ -5,7 +5,7 @@ This module generates the MotionData dataclass dynamically from the BIDS schema
 using bidsschematools, ensuring automatic synchronization with BIDS updates.
 """
 from dataclasses import dataclass, field, fields as dataclass_fields
-from typing import Optional, List, Dict, Any
+from typing import TYPE_CHECKING, Optional, List, Dict, Any
 import numpy as np
 from dataclasses_json import dataclass_json
 
@@ -16,6 +16,35 @@ from .schema_utils import (
     get_recommended_fields,
     get_motion_entities,
 )
+
+
+if TYPE_CHECKING:
+    # Static stub mirroring the runtime-generated dataclass so type checkers
+    # can resolve ``MotionData`` as a class in annotations (the real class is
+    # built dynamically below and is otherwise opaque to static analysis).
+    @dataclass
+    class MotionData:
+        subject_id: str
+        task_name: str
+        tracksys: str
+        sampling_frequency: float
+        tracked_points_count: int
+        manufacturer: Optional[str] = None
+        manufacturers_model_name: Optional[str] = None
+        software_versions: Optional[str] = None
+        motion_channel_count: Optional[int] = None
+        recording_duration: Optional[float] = None
+        recording_type: Optional[str] = "continuous"
+        session_id: Optional[str] = None
+        acquisition: Optional[str] = None
+        run: Optional[int] = None
+        acq_time: Optional[str] = None
+        data: Optional[np.ndarray] = None
+        channels: Optional[List[Channel]] = None
+        additional_metadata: Optional[Dict[str, Any]] = None
+
+        def get_bids_filename(self, suffix: str = "motion", extension: str = "json") -> str: ...
+        def to_metadata_dict(self) -> Dict[str, Any]: ...
 
 
 def _snake_case(name: str) -> str:
@@ -196,7 +225,14 @@ def _create_motion_data_class():
     docstring += """
     Example:
         >>> import numpy as np
+        >>> from motionbids import Channel
         >>> data = np.random.randn(1000, 30)  # 1000 timepoints, 30 channels
+        >>> channels = [
+        ...     Channel(channel_name=f"marker{i}_{ax}", channel_component=ax,
+        ...             channel_type="POS", channel_tracked_point=f"marker{i}",
+        ...             channel_units="mm")
+        ...     for i in range(10) for ax in ["x", "y", "z"]
+        ... ]
         >>> motion = MotionData(
         ...     subject_id="01",
         ...     task_name="walk",
@@ -204,8 +240,7 @@ def _create_motion_data_class():
         ...     sampling_frequency=120.0,
         ...     tracked_points_count=10,
         ...     data=data,
-        ...     columns=[f"ch{i}" for i in range(30)],
-        ...     units=["mm"] * 30
+        ...     channels=channels,
         ... )
     """
     
@@ -348,8 +383,19 @@ def _create_motion_data_class():
     return MotionData
 
 
-# Generate the class at module import time
-MotionData = _create_motion_data_class()
+# The dynamically-generated class is built on first access (parsing the BIDS
+# schema is expensive; callers who only need export helpers should not pay
+# that cost on ``import motionbids``).
+_motion_data_cls = None
 
-# Export for type checking
+
+def __getattr__(name: str):
+    if name == "MotionData":
+        global _motion_data_cls
+        if _motion_data_cls is None:
+            _motion_data_cls = _create_motion_data_class()
+        return _motion_data_cls
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 __all__ = ['MotionData']
