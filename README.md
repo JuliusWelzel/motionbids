@@ -259,8 +259,8 @@ pytest --cov=motionbids
 ```bibtex
 @software{motionbids,
   author = {Welzel, Julius},
-  title = {motion2bids: BIDS converter for motion capture data},
-  year = {2025},
+  title = {motionbids: BIDS converter for motion capture data},
+  year = {2026},
   url = {https://github.com/JuliusWelzel/motionbids}
 }
 ```
