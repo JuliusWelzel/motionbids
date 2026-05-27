@@ -5,38 +5,36 @@ This package provides tools to define, validate, and export BIDS-compliant
 motion capture data.
 
 Example usage:
-    >>> from motionbids import MotionData, validate_motion_data, export_bids_motion
+    >>> from motionbids import MotionData, Channel, validate_motion_data, export_bids_motion
     >>> import numpy as np
-    >>> 
-    >>> # Create motion data object
+    >>>
+    >>> data = np.random.randn(1000, 3)
+    >>> channels = [
+    ...     Channel(channel_name=f"marker0_{axis}", channel_component=axis,
+    ...             channel_type="POS", channel_tracked_point="marker0",
+    ...             channel_units="mm")
+    ...     for axis in ["x", "y", "z"]
+    ... ]
     >>> motion = MotionData(
     ...     subject_id="01",
     ...     task_name="rest",
+    ...     tracksys="optical",
     ...     sampling_frequency=100,
-    ...     tracked_points_count=10,
+    ...     tracked_points_count=1,
     ...     manufacturer="Vicon",
-    ...     data=np.random.randn(1000, 10),
-    ...     columns=[f"marker{i}" for i in range(10)],
-    ...     units=["mm"] * 10
+    ...     data=data,
+    ...     channels=channels,
     ... )
-    >>> 
-    >>> # Validate
     >>> validate_motion_data(motion)
     True
-    >>> 
-    >>> # Export to BIDS format
     >>> files = export_bids_motion(motion, out_dir="bids_out/")
-    >>> print(files)
-    {'json': ..., 'tsv': ..., 'channels': ...}
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Julius Welzel"
 __email__ = "julius.welzel@gmail.com"
 
 # Import main classes and functions
-# Using dynamic schema-based MotionData class
-from .datamodel_dynamic import MotionData
 from .channel import Channel
 from .validator import (
     validate_motion_data,
@@ -59,6 +57,16 @@ from .exporter import (
 
 # Optional: Schema utilities (users typically won't need these directly)
 from . import schema_utils
+
+
+def __getattr__(name: str):
+    # ``MotionData`` is built dynamically from the BIDS schema; defer that
+    # work until the class is actually requested so callers that only need
+    # the export helpers don't pay the schema-parse cost on ``import``.
+    if name == "MotionData":
+        from .datamodel_dynamic import MotionData as _MotionData
+        return _MotionData
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # Define public API
 __all__ = [

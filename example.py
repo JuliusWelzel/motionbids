@@ -127,7 +127,7 @@ for file_type in ['json', 'tsv', 'channels']:
 
 print("\nKey metadata:")
 metadata = motion.to_metadata_dict()
-for key in ["TaskName", "SamplingFrequency", "TrackedPointsCount", "TrackingSystem"]:
+for key in ["TaskName", "SamplingFrequency", "TrackedPointsCount", "Manufacturer"]:
     if key in metadata:
         print(f"  {key}: {metadata[key]}")
 
