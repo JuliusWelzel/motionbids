@@ -4,8 +4,15 @@ Schema utilities for extracting BIDS motion metadata fields.
 This module uses bidsschematools to extract schema definitions for motion data
 without loading the schema at runtime in typical user workflows.
 """
+from functools import lru_cache
 from typing import Dict, List, Optional, Set
 from bidsschematools import schema
+
+
+@lru_cache(maxsize=1)
+def _load_schema_cached():
+    """Cached BIDS schema load — parsing the schema is expensive, so do it once."""
+    return schema.load_schema()
 
 
 def get_motion_metadata_fields() -> Dict[str, Dict]:
@@ -17,7 +24,7 @@ def get_motion_metadata_fields() -> Dict[str, Dict]:
         including requirement level (required/recommended/optional).
     """
     # Load the BIDS schema
-    bids_schema = schema.load_schema()
+    bids_schema = _load_schema_cached()
     
     # Get metadata fields - motion data typically uses the same metadata structure
     # as other continuous recordings (like physiological data)
@@ -43,7 +50,7 @@ def get_motion_entities() -> Dict[str, Dict]:
     Returns:
         Dictionary mapping entity names to their schema definitions.
     """
-    bids_schema = schema.load_schema()
+    bids_schema = _load_schema_cached()
     entities = {}
     
     # Common entities for motion data
