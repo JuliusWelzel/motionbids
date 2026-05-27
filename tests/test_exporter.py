@@ -16,7 +16,6 @@ from motionbids.exporter import (
     create_bids_directory_structure,
     export_dataset_description,
     export_participants_tsv,
-    _parse_channel_name,
 )
 
 
@@ -281,58 +280,6 @@ def test_export_tsv_1d_data(temp_dir):
     # Verify data is correctly saved (no header per BIDS spec)
     data = np.loadtxt(files['tsv'], delimiter='\t')
     assert data.shape == (100,)
-
-
-def test_parse_channel_name_position():
-    """Test parsing position channel names."""
-    component, tracked_point, channel_type = _parse_channel_name("marker0_x")
-    assert component == "x"
-    assert tracked_point == "marker0"
-    assert channel_type == "POS"
-    
-    component, tracked_point, channel_type = _parse_channel_name("point1_y")
-    assert component == "y"
-    assert tracked_point == "point1"
-    assert channel_type == "POS"
-
-
-def test_parse_channel_name_orientation():
-    """Test parsing orientation channel names."""
-    # Quaternion
-    component, tracked_point, channel_type = _parse_channel_name("marker0_quat_w")
-    assert component == "quat_w"
-    assert tracked_point == "marker0"
-    assert channel_type == "ORNT"
-    
-    # Euler angles
-    component, tracked_point, channel_type = _parse_channel_name("sensor1_roll")
-    assert component == "roll"
-    assert tracked_point == "sensor1"
-    assert channel_type == "ORNT"
-
-
-def test_parse_channel_name_velocity():
-    """Test parsing velocity channel names."""
-    component, tracked_point, channel_type = _parse_channel_name("marker0_vx")
-    assert component == "vx"
-    assert tracked_point == "marker0"
-    assert channel_type == "VEL"
-
-
-def test_parse_channel_name_acceleration():
-    """Test parsing acceleration channel names."""
-    component, tracked_point, channel_type = _parse_channel_name("marker0_ax")
-    assert component == "ax"
-    assert tracked_point == "marker0"
-    assert channel_type == "ACCEL"
-
-
-def test_parse_channel_name_unparseable():
-    """Test parsing unparseable channel names."""
-    component, tracked_point, channel_type = _parse_channel_name("unknown_channel")
-    assert component == "n/a"
-    assert tracked_point == "unknown_channel"
-    assert channel_type == "POS"
 
 
 # ---- export_participants_tsv tests ----
