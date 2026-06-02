@@ -65,6 +65,4 @@ bids_root/
 uv.lock
 
 # JOSS paper draft
-paper.md
-paper.bib
 /figures/
