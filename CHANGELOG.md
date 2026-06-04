@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-06-04
+
+### Fixed
+- `create_bids_directory_structure()` now defaults to NOT creating session directories
+  to comply with BIDS validator expectations for motion data
+- Session directories can still be created by setting `use_session_dir=True`
+
+### Added
+- New example `examples/from_xdf_movella.py` demonstrating batch conversion of
+  XDF files with Movella DOT IMU sensors
+- Example shows proper handling of zero nominal sample rates and correct data loading sequence
+
 ## [0.2.1] - 2026-04-07
 
 ### Changed

@@ -282,6 +282,25 @@ def test_export_tsv_1d_data(temp_dir):
     assert data.shape == (100,)
 
 
+def test_create_bids_directory_structure_no_session_dir(temp_dir):
+    """Test creating BIDS directory without session dir even when session_id is provided."""
+    motion_dir = create_bids_directory_structure(
+        temp_dir, "01", session_id="01", use_session_dir=False
+    )
+    
+    assert motion_dir.exists()
+    assert motion_dir == temp_dir / "sub-01" / "motion"  # No ses-01 directory
+
+
+def test_create_bids_directory_structure_with_session_dir_explicit(temp_dir):
+    """Test creating BIDS directory with session dir when explicitly requested."""
+    motion_dir = create_bids_directory_structure(
+        temp_dir, "01", session_id="01", use_session_dir=True
+    )
+    
+    assert motion_dir.exists()
+    assert motion_dir == temp_dir / "sub-01" / "ses-01" / "motion"
+
 # ---- export_participants_tsv tests ----
 
 def test_export_participants_tsv_creates_new_file(temp_dir):

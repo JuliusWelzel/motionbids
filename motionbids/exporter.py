@@ -357,7 +357,8 @@ def export_scans_tsv(
 def create_bids_directory_structure(
     base_dir: Union[str, Path],
     subject_id: str,
-    session_id: Optional[str] = None
+    session_id: Optional[str] = None,
+    use_session_dir: bool = False
 ) -> Path:
     """
     Create BIDS-compliant directory structure for motion data.
@@ -368,29 +369,40 @@ def create_bids_directory_structure(
     Args:
         base_dir: Base BIDS directory
         subject_id: Subject identifier
-        session_id: Optional session identifier
+        session_id: Optional session identifier (for filename only)
+        use_session_dir: Whether to create ses-* directory structure (default: False)
+                        Set to True only if you need session-level organization
     
     Returns:
         Path to the motion data directory
     
+    Note:
+        By default (use_session_dir=False), motion files are stored directly under
+        sub-*/motion/ even when session_id is provided (session info appears in filenames).
+        This follows BIDS convention for single-session studies or when sessions
+        don't require separate directories.
+    
     Example:
+        >>> # Default: no session directory (BIDS compliant for most cases)
         >>> motion_dir = create_bids_directory_structure("bids_root", "01", "01")
+        >>> print(motion_dir)
+        bids_root/sub-01/motion
+        
+        >>> # Explicit session directories (only if needed)
+        >>> motion_dir = create_bids_directory_structure("bids_root", "01", "01", use_session_dir=True)
         >>> print(motion_dir)
         bids_root/sub-01/ses-01/motion
     """
     base_dir = Path(base_dir)
-    
-    # Build directory path
     subject_dir = base_dir / f"sub-{subject_id}"
     
-    if session_id:
+    # Only create session directory if explicitly requested
+    if session_id and use_session_dir:
         motion_dir = subject_dir / f"ses-{session_id}" / "motion"
     else:
         motion_dir = subject_dir / "motion"
     
-    # Create directories
     motion_dir.mkdir(parents=True, exist_ok=True)
-    
     return motion_dir
 
 
