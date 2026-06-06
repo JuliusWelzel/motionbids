@@ -38,9 +38,9 @@ affiliations:
    index: 2
  - name: Technische Universität Berlin, Berlin, Germany
    index: 3
- - name: University of Bologna, Department of Electrical, Electronic and Information Engineering "Guglielmo Marconi", Bologna, Italy
-   index: 5
- - name: Institute for Visualization and Interactive Systems, University of Stuttgart, Stuttgart, Germany
+ - name: IRCCS Istituto delle Scienze Neurologiche di Bologna, Bologna, Italy
+   index: 4 
+ - name: Institute for Visualization and Interactive    Systems, University of Stuttgart, Stuttgart, Germany
    index: 5
 
 date: 02 June 2026
