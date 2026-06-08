@@ -64,7 +64,7 @@ motion = MotionData(
     recording_type="continuous",
     
     # Optional BIDS entities
-    session_id="01",
+    session="01",
     acquisition="indoor",
     run=1,
     acq_time="2025-11-04T14:30:00",  # Triggers scans.tsv creation
@@ -91,7 +91,7 @@ bids_root = Path("example_bids_dataset")
 motion_dir = create_bids_directory_structure(
     base_dir=bids_root,
     subject="01",
-    session_id="01"
+    session="01"
 )
 
 # Export dataset description

@@ -29,14 +29,14 @@ from motionbids import (
 )
 
 
-def process_xdf_file(xdf_file: Path, base_dir: str, session_id: str = "01") -> bool:
+def process_xdf_file(xdf_file: Path, base_dir: str, session: str = "01") -> bool:
     """
     Process a single XDF file and export to BIDS format.
     
     Args:
         xdf_file: Path to XDF file
         base_dir: BIDS dataset root directory
-        session_id: Session identifier (optional)
+        session: Session identifier (optional)
     
     Returns:
         True if successful, False otherwise
@@ -49,14 +49,14 @@ def process_xdf_file(xdf_file: Path, base_dir: str, session_id: str = "01") -> b
     subject = xdf_file.stem
     
     # Step 1: Create BIDS directory structure
-    # Passing session_id creates a ses-<label> level; passing None keeps files
+    # Passing session creates a ses-<label> level; passing None keeps files
     # directly under the subject. Either way it stays consistent with the
     # filenames generated below.
     print(f"\n1. Creating BIDS directory structure for sub-{subject}")
     motion_dir = create_bids_directory_structure(
         base_dir=base_dir,
         subject=subject,
-        session_id=session_id
+        session=session
     )
     print(f"   Created: {motion_dir}")
     
@@ -146,7 +146,7 @@ def process_xdf_file(xdf_file: Path, base_dir: str, session_id: str = "01") -> b
     # Create MotionData object
     motion = MotionData(
         subject=subject,
-        session_id=session_id,  # Drives both the ses-<label> dir and the filename
+        session=session,  # Drives both the ses-<label> dir and the filename
         task_name="walking",
         tracksys="imu",
         sampling_frequency=sampling_rate,
@@ -172,7 +172,7 @@ def main():
     # Configuration
     base_dir = "bids_dataset"
     data_folder = Path("data")
-    session_id = "01"  # Optional: set to None if no sessions
+    session = "01"  # Optional: set to None if no sessions
     
     # Get all XDF files
     xdf_files = sorted(data_folder.glob("*.xdf"))
@@ -204,7 +204,7 @@ def main():
     for i, xdf_file in enumerate(xdf_files, 1):
         print(f"\n[{i}/{len(xdf_files)}] Processing {xdf_file.name}")
         try:
-            if process_xdf_file(xdf_file, base_dir, session_id):
+            if process_xdf_file(xdf_file, base_dir, session):
                 successful += 1
             else:
                 failed += 1

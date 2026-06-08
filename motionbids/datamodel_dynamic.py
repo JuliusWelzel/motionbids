@@ -35,7 +35,7 @@ if TYPE_CHECKING:
         motion_channel_count: Optional[int] = None
         recording_duration: Optional[float] = None
         recording_type: Optional[str] = "continuous"
-        session_id: Optional[str] = None
+        session: Optional[str] = None
         acquisition: Optional[str] = None
         run: Optional[int] = None
         acq_time: Optional[str] = None
@@ -145,11 +145,11 @@ def _create_motion_data_class():
         )
     
     # Add optional BIDS entities
-    class_fields['session_id'] = (
+    class_fields['session'] = (
         Optional[str],
         field(default=None, metadata={'bids_name': 'ses', 'optional': True})
     )
-    field_docs['session_id'] = "Session identifier (BIDS entity 'ses')"
+    field_docs['session'] = "Session identifier (BIDS entity 'ses')"
     
     class_fields['acquisition'] = (
         Optional[str],
@@ -321,8 +321,8 @@ def _create_motion_data_class():
         
         parts = [f"sub-{self.subject}"]
         
-        if self.session_id:
-            parts.append(f"ses-{self.session_id}")
+        if self.session:
+            parts.append(f"ses-{self.session}")
         
         parts.append(f"task-{self.task_name}")
         
@@ -360,7 +360,7 @@ def _create_motion_data_class():
                 continue
             if fld.metadata.get('motion_data'):
                 continue
-            if fld.name in ['subject', 'session_id', 'acquisition', 'run', 'tracksys', 'acq_time', 'additional_metadata']:
+            if fld.name in ['subject', 'session', 'acquisition', 'run', 'tracksys', 'acq_time', 'additional_metadata']:
                 continue
             
             # Get BIDS name from metadata

@@ -43,7 +43,7 @@ def test_motion_data_creation_full():
         motion_channel_count=15,
         recording_duration=10.0,
         recording_type="continuous",
-        session_id="01",
+        session="01",
         acquisition="outdoor",
         run=1,
         tracksys="optical",
@@ -53,7 +53,7 @@ def test_motion_data_creation_full():
     )
     
     assert motion.manufacturer == "Vicon"
-    assert motion.session_id == "01"
+    assert motion.session == "01"
     assert motion.run == 1
     assert np.array_equal(motion.data, data)
     assert len(motion.channels) == 3
@@ -141,7 +141,7 @@ def test_get_bids_filename_full():
         task_name="walk",
         sampling_frequency=100.0,
         tracked_points_count=10,
-        session_id="01",
+        session="01",
         acquisition="outdoor",
         run=2,
         tracksys="optical"

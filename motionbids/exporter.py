@@ -115,9 +115,9 @@ def export_bids_motion(
     # Export scans.tsv if acq_time is provided
     if data.acq_time is not None:
         # scans.tsv goes in the subject (or session) directory, not motion subdirectory
-        if data.session_id:
+        if data.session:
             scans_dir = out_dir.parent  # Go up from motion/ to ses-XX/
-            scans_filename = f"sub-{data.subject}_ses-{data.session_id}_scans.tsv"
+            scans_filename = f"sub-{data.subject}_ses-{data.session}_scans.tsv"
         else:
             scans_dir = out_dir.parent  # Go up from motion/ to sub-XX/
             scans_filename = f"sub-{data.subject}_scans.tsv"
@@ -357,16 +357,16 @@ def export_scans_tsv(
 def create_bids_directory_structure(
     base_dir: Union[str, Path],
     subject: str,
-    session_id: Optional[str] = None,
+    session: Optional[str] = None,
 ) -> Path:
     """
     Create BIDS-compliant directory structure for motion data.
 
     Creates:
-        base_dir/sub-<subject>/[ses-<session_id>/]motion/
+        base_dir/sub-<subject>/[ses-<session>/]motion/
 
-    A ``ses-<session_id>`` directory level is created when (and only when) a
-    ``session_id`` is provided. This follows the BIDS rule that the session
+    A ``ses-<session>`` directory level is created when (and only when) a
+    ``session`` is provided. This follows the BIDS rule that the session
     directory level must be present exactly when the ``ses-`` entity is used in
     filenames, and absent when it is not — keeping filenames and their on-disk
     location consistent.
@@ -374,8 +374,8 @@ def create_bids_directory_structure(
     Args:
         base_dir: Base BIDS directory
         subject: Subject identifier
-        session_id: Optional session identifier. When provided, a
-                    ``ses-<session_id>`` directory level is created.
+        session: Optional session identifier. When provided, a
+                    ``ses-<session>`` directory level is created.
 
     Returns:
         Path to the motion data directory
@@ -394,9 +394,9 @@ def create_bids_directory_structure(
     base_dir = Path(base_dir)
     subject_dir = base_dir / f"sub-{subject}"
 
-    # Create a session directory level whenever a session_id is given.
-    if session_id:
-        motion_dir = subject_dir / f"ses-{session_id}" / "motion"
+    # Create a session directory level whenever a session is given.
+    if session:
+        motion_dir = subject_dir / f"ses-{session}" / "motion"
     else:
         motion_dir = subject_dir / "motion"
 

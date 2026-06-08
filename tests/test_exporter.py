@@ -241,7 +241,7 @@ def test_export_with_all_entities(temp_dir):
     """Test export with all BIDS entities."""
     motion = MotionData(
         subject="01",
-        session_id="01",
+        session="01",
         task_name="walk",
         acquisition="outdoor",
         run=2,
@@ -283,7 +283,7 @@ def test_export_tsv_1d_data(temp_dir):
 
 
 def test_create_bids_directory_structure_no_session(temp_dir):
-    """Without a session_id, motion files live directly under the subject."""
+    """Without a session, motion files live directly under the subject."""
     motion_dir = create_bids_directory_structure(temp_dir, "01")
 
     assert motion_dir.exists()
@@ -291,8 +291,8 @@ def test_create_bids_directory_structure_no_session(temp_dir):
 
 
 def test_create_bids_directory_structure_with_session(temp_dir):
-    """When a session_id is given, a ses-<label> directory level is created."""
-    motion_dir = create_bids_directory_structure(temp_dir, "01", session_id="01")
+    """When a session is given, a ses-<label> directory level is created."""
+    motion_dir = create_bids_directory_structure(temp_dir, "01", session="01")
 
     assert motion_dir.exists()
     assert motion_dir == temp_dir / "sub-01" / "ses-01" / "motion"
