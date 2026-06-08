@@ -37,7 +37,7 @@ def sample_motion_data():
         Channel(channel_name="z", channel_component="z", channel_type="POS", channel_tracked_point="marker0", channel_units="mm")
     ]
     return MotionData(
-        subject_id="01",
+        subject="01",
         task_name="walk",
         sampling_frequency=120.0,
         tracked_points_count=10,
@@ -127,7 +127,7 @@ def test_export_bids_motion_full(temp_dir, sample_motion_data):
 def test_export_bids_motion_metadata_only(temp_dir):
     """Test BIDS export with only metadata (no data array)."""
     motion = MotionData(
-        subject_id="02",
+        subject="02",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=5,
@@ -170,7 +170,7 @@ def test_export_bids_motion_create_dirs(temp_dir):
     output_dir = temp_dir / "nested" / "directories"
     
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -191,7 +191,7 @@ def test_export_bids_motion_without_channels_fails(temp_dir):
     with pytest.raises(ValueError, match="Number of channels"):
         # Will fail in __post_init__ due to channel count mismatch
         motion = MotionData(
-            subject_id="01",
+            subject="01",
             task_name="rest",
             tracksys="optical",
             sampling_frequency=100.0,
@@ -240,8 +240,8 @@ def test_export_dataset_description(temp_dir):
 def test_export_with_all_entities(temp_dir):
     """Test export with all BIDS entities."""
     motion = MotionData(
-        subject_id="01",
-        session_id="01",
+        subject="01",
+        session="01",
         task_name="walk",
         acquisition="outdoor",
         run=2,
@@ -264,7 +264,7 @@ def test_export_tsv_1d_data(temp_dir):
         Channel(channel_name="x", channel_component="x", channel_type="POS", channel_tracked_point="marker0", channel_units="mm")
     ]
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -281,6 +281,21 @@ def test_export_tsv_1d_data(temp_dir):
     data = np.loadtxt(files['tsv'], delimiter='\t')
     assert data.shape == (100,)
 
+
+def test_create_bids_directory_structure_no_session(temp_dir):
+    """Without a session, motion files live directly under the subject."""
+    motion_dir = create_bids_directory_structure(temp_dir, "01")
+
+    assert motion_dir.exists()
+    assert motion_dir == temp_dir / "sub-01" / "motion"  # No ses-* directory
+
+
+def test_create_bids_directory_structure_with_session(temp_dir):
+    """When a session is given, a ses-<label> directory level is created."""
+    motion_dir = create_bids_directory_structure(temp_dir, "01", session="01")
+
+    assert motion_dir.exists()
+    assert motion_dir == temp_dir / "sub-01" / "ses-01" / "motion"
 
 # ---- export_participants_tsv tests ----
 

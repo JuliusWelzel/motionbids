@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 # Define required fields based on BIDS specification for motion data
 REQUIRED_FIELDS = {
-    'subject_id',
+    'subject',
     'task_name',
     'sampling_frequency',
     'tracked_points_count',
@@ -64,7 +64,7 @@ def validate_motion_data(data: MotionData, strict: bool = False) -> bool:
         ValidationError: If required fields are missing or invalid
     
     Example:
-        >>> motion = MotionData(subject_id="01", task_name="rest", ...)
+        >>> motion = MotionData(subject="01", task_name="rest", ...)
         >>> validate_motion_data(motion)
         True
     """
@@ -151,11 +151,11 @@ def validate_field_values(data: MotionData) -> List[str]:
     """
     errors = []
     
-    # Validate subject_id format (alphanumeric, no special chars except hyphen/underscore)
-    if data.subject_id:
-        if not all(c.isalnum() or c in '-_' for c in data.subject_id):
+    # Validate subject format (alphanumeric, no special chars except hyphen/underscore)
+    if data.subject:
+        if not all(c.isalnum() or c in '-_' for c in data.subject):
             errors.append(
-                "subject_id must contain only alphanumeric characters, "
+                "subject must contain only alphanumeric characters, "
                 "hyphens, or underscores"
             )
     

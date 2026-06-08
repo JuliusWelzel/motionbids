@@ -56,7 +56,7 @@ def export_bids_motion(
         ValueError: If data array is present but columns are not defined
     
     Example:
-        >>> motion = MotionData(subject_id="01", task_name="rest", ...)
+        >>> motion = MotionData(subject="01", task_name="rest", ...)
         >>> files = export_bids_motion(motion, "bids_out/")
         >>> print(files['json'])
         bids_out/sub-01_task-rest_motion.json
@@ -115,12 +115,12 @@ def export_bids_motion(
     # Export scans.tsv if acq_time is provided
     if data.acq_time is not None:
         # scans.tsv goes in the subject (or session) directory, not motion subdirectory
-        if data.session_id:
+        if data.session:
             scans_dir = out_dir.parent  # Go up from motion/ to ses-XX/
-            scans_filename = f"sub-{data.subject_id}_ses-{data.session_id}_scans.tsv"
+            scans_filename = f"sub-{data.subject}_ses-{data.session}_scans.tsv"
         else:
             scans_dir = out_dir.parent  # Go up from motion/ to sub-XX/
-            scans_filename = f"sub-{data.subject_id}_scans.tsv"
+            scans_filename = f"sub-{data.subject}_scans.tsv"
         
         scans_path = scans_dir / scans_filename
         scans_path = export_scans_tsv(data, scans_path)
@@ -298,7 +298,7 @@ def export_scans_tsv(
         https://bids-specification.readthedocs.io/en/stable/modality-agnostic-files/data-summary-files.html#scans-file
     
     Example:
-        >>> motion = MotionData(subject_id="01", task_name="walk", 
+        >>> motion = MotionData(subject="01", task_name="walk", 
         ...                     acq_time="2023-06-15T14:30:00.123456", ...)
         >>> export_scans_tsv(motion, "bids_root/sub-01/sub-01_scans.tsv")
     """
@@ -356,41 +356,51 @@ def export_scans_tsv(
 
 def create_bids_directory_structure(
     base_dir: Union[str, Path],
-    subject_id: str,
-    session_id: Optional[str] = None
+    subject: str,
+    session: Optional[str] = None,
 ) -> Path:
     """
     Create BIDS-compliant directory structure for motion data.
-    
+
     Creates:
-        base_dir/sub-<subject_id>/[ses-<session_id>/]motion/
-    
+        base_dir/sub-<subject>/[ses-<session>/]motion/
+
+    A ``ses-<session>`` directory level is created when (and only when) a
+    ``session`` is provided. This follows the BIDS rule that the session
+    directory level must be present exactly when the ``ses-`` entity is used in
+    filenames, and absent when it is not — keeping filenames and their on-disk
+    location consistent.
+
     Args:
         base_dir: Base BIDS directory
-        subject_id: Subject identifier
-        session_id: Optional session identifier
-    
+        subject: Subject identifier
+        session: Optional session identifier. When provided, a
+                    ``ses-<session>`` directory level is created.
+
     Returns:
         Path to the motion data directory
-    
+
     Example:
+        >>> # No session: motion files live directly under the subject
+        >>> motion_dir = create_bids_directory_structure("bids_root", "01")
+        >>> print(motion_dir)
+        bids_root/sub-01/motion
+
+        >>> # With a session: a ses-<label> level is created
         >>> motion_dir = create_bids_directory_structure("bids_root", "01", "01")
         >>> print(motion_dir)
         bids_root/sub-01/ses-01/motion
     """
     base_dir = Path(base_dir)
-    
-    # Build directory path
-    subject_dir = base_dir / f"sub-{subject_id}"
-    
-    if session_id:
-        motion_dir = subject_dir / f"ses-{session_id}" / "motion"
+    subject_dir = base_dir / f"sub-{subject}"
+
+    # Create a session directory level whenever a session is given.
+    if session:
+        motion_dir = subject_dir / f"ses-{session}" / "motion"
     else:
         motion_dir = subject_dir / "motion"
-    
-    # Create directories
+
     motion_dir.mkdir(parents=True, exist_ok=True)
-    
     return motion_dir
 
 

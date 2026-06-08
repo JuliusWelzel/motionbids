@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     # built dynamically below and is otherwise opaque to static analysis).
     @dataclass
     class MotionData:
-        subject_id: str
+        subject: str
         task_name: str
         tracksys: str
         sampling_frequency: float
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
         motion_channel_count: Optional[int] = None
         recording_duration: Optional[float] = None
         recording_type: Optional[str] = "continuous"
-        session_id: Optional[str] = None
+        session: Optional[str] = None
         acquisition: Optional[str] = None
         run: Optional[int] = None
         acq_time: Optional[str] = None
@@ -99,8 +99,8 @@ def _create_motion_data_class():
     # Otherwise Python raises: "non-default argument follows default argument"
     
     # Add required BIDS entities (not from schema metadata)
-    class_fields['subject_id'] = (str, field(metadata={'bids_name': 'sub', 'required': True}))
-    field_docs['subject_id'] = "Subject identifier (BIDS entity 'sub')"
+    class_fields['subject'] = (str, field(metadata={'bids_name': 'sub', 'required': True}))
+    field_docs['subject'] = "Subject identifier (BIDS entity 'sub')"
     
     class_fields['task_name'] = (str, field(metadata={'bids_name': 'TaskName', 'required': True}))
     field_docs['task_name'] = "Name of the task (BIDS metadata 'TaskName')"
@@ -145,11 +145,11 @@ def _create_motion_data_class():
         )
     
     # Add optional BIDS entities
-    class_fields['session_id'] = (
+    class_fields['session'] = (
         Optional[str],
         field(default=None, metadata={'bids_name': 'ses', 'optional': True})
     )
-    field_docs['session_id'] = "Session identifier (BIDS entity 'ses')"
+    field_docs['session'] = "Session identifier (BIDS entity 'ses')"
     
     class_fields['acquisition'] = (
         Optional[str],
@@ -234,7 +234,7 @@ def _create_motion_data_class():
         ...     for i in range(10) for ax in ["x", "y", "z"]
         ... ]
         >>> motion = MotionData(
-        ...     subject_id="01",
+        ...     subject="01",
         ...     task_name="walk",
         ...     tracksys="optical",
         ...     sampling_frequency=120.0,
@@ -319,10 +319,10 @@ def _create_motion_data_class():
                 "Please provide a tracking system label (e.g., 'optical', 'imu', 'video')."
             )
         
-        parts = [f"sub-{self.subject_id}"]
+        parts = [f"sub-{self.subject}"]
         
-        if self.session_id:
-            parts.append(f"ses-{self.session_id}")
+        if self.session:
+            parts.append(f"ses-{self.session}")
         
         parts.append(f"task-{self.task_name}")
         
@@ -360,7 +360,7 @@ def _create_motion_data_class():
                 continue
             if fld.metadata.get('motion_data'):
                 continue
-            if fld.name in ['subject_id', 'session_id', 'acquisition', 'run', 'tracksys', 'acq_time', 'additional_metadata']:
+            if fld.name in ['subject', 'session', 'acquisition', 'run', 'tracksys', 'acq_time', 'additional_metadata']:
                 continue
             
             # Get BIDS name from metadata

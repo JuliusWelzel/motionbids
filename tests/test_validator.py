@@ -18,7 +18,7 @@ from motionbids.validator import (
 def test_validate_motion_data_valid():
     """Test validation passes for valid data."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -31,9 +31,9 @@ def test_validate_motion_data_valid():
 
 def test_validate_motion_data_missing_required():
     """Test validation fails for missing required fields."""
-    # Create data with empty subject_id (simulating missing required field)
+    # Create data with empty subject (simulating missing required field)
     motion = MotionData(
-        subject_id="",  # Invalid: empty string
+        subject="",  # Invalid: empty string
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -47,7 +47,7 @@ def test_validate_motion_data_missing_required():
 def test_validate_motion_data_warns_missing_recommended():
     """Test validation warns about missing recommended fields."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -68,7 +68,7 @@ def test_validate_motion_data_warns_missing_recommended():
 def test_validate_motion_data_strict_mode():
     """Test strict mode raises error for missing recommended fields."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -82,7 +82,7 @@ def test_validate_motion_data_strict_mode():
 def test_check_required_fields():
     """Test checking required fields."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -96,7 +96,7 @@ def test_check_required_fields():
 def test_check_required_fields_with_missing():
     """Test checking required fields with missing values."""
     motion = MotionData(
-        subject_id="",  # Empty
+        subject="",  # Empty
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -104,13 +104,13 @@ def test_check_required_fields_with_missing():
     )
     
     missing = check_required_fields(motion)
-    assert "subject_id" in missing
+    assert "subject" in missing
 
 
 def test_check_recommended_fields():
     """Test checking recommended fields."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -130,7 +130,7 @@ def test_check_recommended_fields():
 def test_check_recommended_fields_with_missing():
     """Test checking recommended fields with missing values."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
@@ -142,24 +142,24 @@ def test_check_recommended_fields_with_missing():
     assert "manufacturers_model_name" in missing
 
 
-def test_validate_invalid_subject_id():
-    """Test validation fails for invalid subject_id format."""
+def test_validate_invalid_subject():
+    """Test validation fails for invalid subject format."""
     motion = MotionData(
-        subject_id="01 invalid",  # Space not allowed
+        subject="01 invalid",  # Space not allowed
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,
         tracked_points_count=10
     )
     
-    with pytest.raises(ValidationError, match="subject_id"):
+    with pytest.raises(ValidationError, match="subject"):
         validate_motion_data(motion)
 
 
 def test_validate_invalid_task_name():
     """Test validation fails for invalid task_name format."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest task",  # Space not allowed
         tracksys="optical",
         sampling_frequency=100.0,
@@ -173,7 +173,7 @@ def test_validate_invalid_task_name():
 def test_validate_high_sampling_frequency():
     """Test validation warns about unreasonably high sampling frequency."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=200000.0,  # 200 kHz - unreasonably high
@@ -195,7 +195,7 @@ def test_validate_data_columns_mismatch():
     # This should fail in __post_init__ when creating the MotionData object
     with pytest.raises(ValueError, match="Number of channels.*must match"):
         MotionData(
-            subject_id="01",
+            subject="01",
             task_name="rest",
             tracksys="optical",
             sampling_frequency=100.0,
@@ -215,7 +215,7 @@ def test_validate_data_duration_mismatch():
     ]
     
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,  # 100 Hz
@@ -232,7 +232,7 @@ def test_validate_data_duration_mismatch():
 def test_validate_bids_compliance():
     """Test BIDS compliance check function."""
     motion_valid = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -242,7 +242,7 @@ def test_validate_bids_compliance():
     assert validate_bids_compliance(motion_valid) is True
     
     motion_invalid = MotionData(
-        subject_id="",  # Invalid
+        subject="",  # Invalid
         task_name="rest",
         tracksys="optical",
         sampling_frequency=100.0,

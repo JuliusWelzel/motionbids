@@ -2,17 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.0] - 2026-04-07
+## [0.3.0] - 2026-06-08
 
 ### Changed
-
-- Package is now available on PyPI (`pip install motionbids`)
+- **Breaking:** the `subject_id` and `session_id` parameters (and the
+  `MotionData.subject_id` / `MotionData.session_id` fields) are renamed to
+  `subject` and `session` across the API (`MotionData`,
+  `create_bids_directory_structure()`, and validation), following the BIDS
+  "subject label" / "session label" terminology. The `participants.tsv`
+  `participant_id` column is unchanged.
 - Updated installation instructions across README and docs
-- Added PyPI version badge to README
 
 ### Added
-
+- New example `examples/from_xdf_movella.py` demonstrating batch conversion of
+  XDF files with Movella DOT IMU sensors
+- Example shows proper handling of zero nominal sample rates and correct data loading sequence
 - Import examples for CSV, C3D (ezc3d), and IMU data in README and workflow docs
+- PyPI version badge to README
+
+### Fixed
+- `create_bids_directory_structure()` now creates a `ses-<label>` directory level
+  if and only if a `session` is provided, matching the BIDS rule that the
+  session directory must be present exactly when the `ses-` entity appears in
+  filenames. This keeps filenames and their on-disk location consistent and fixes
+  BIDS validator `INVALID_LOCATION` errors (replaces the earlier `use_session_dir`
+  flag, which has been removed)
 
 ## [0.2.0] - 2026-03-09
 
