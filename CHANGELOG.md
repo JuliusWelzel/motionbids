@@ -11,6 +11,14 @@ All notable changes to this project will be documented in this file.
   `create_bids_directory_structure()`, and validation), following the BIDS
   "subject label" / "session label" terminology. The `participants.tsv`
   `participant_id` column is unchanged.
+- Updated installation instructions across README and docs
+
+### Added
+- New example `examples/from_xdf_movella.py` demonstrating batch conversion of
+  XDF files with Movella DOT IMU sensors
+- Example shows proper handling of zero nominal sample rates and correct data loading sequence
+- Import examples for CSV, C3D (ezc3d), and IMU data in README and workflow docs
+- PyPI version badge to README
 
 ### Fixed
 - `create_bids_directory_structure()` now creates a `ses-<label>` directory level
@@ -19,23 +27,6 @@ All notable changes to this project will be documented in this file.
   filenames. This keeps filenames and their on-disk location consistent and fixes
   BIDS validator `INVALID_LOCATION` errors (replaces the earlier `use_session_dir`
   flag, which has been removed)
-
-### Added
-- New example `examples/from_xdf_movella.py` demonstrating batch conversion of
-  XDF files with Movella DOT IMU sensors
-- Example shows proper handling of zero nominal sample rates and correct data loading sequence
-
-## [0.2.1] - 2026-04-07
-
-### Changed
-
-- Package is now available on PyPI (`pip install motionbids`)
-- Updated installation instructions across README and docs
-- Added PyPI version badge to README
-
-### Added
-
-- Import examples for CSV, C3D (ezc3d), and IMU data in README and workflow docs
 
 ## [0.2.0] - 2026-03-09
 
