@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2.2] - 2026-06-04
 
+### Changed
+- **Breaking:** the `subject_id` parameter and `MotionData.subject_id` field are
+  renamed to `subject` across the API (`MotionData`, `create_bids_directory_structure()`,
+  and validation), following the BIDS "subject label" terminology
+
 ### Fixed
 - `create_bids_directory_structure()` now creates a `ses-<label>` directory level
   if and only if a `session_id` is provided, matching the BIDS rule that the

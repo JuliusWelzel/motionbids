@@ -49,7 +49,7 @@ channels = [
 
 motion = MotionData(
     # Required BIDS fields
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=sampling_freq,
@@ -90,7 +90,7 @@ bids_root = Path("example_bids_dataset")
 # Create directory structure
 motion_dir = create_bids_directory_structure(
     base_dir=bids_root,
-    subject_id="01",
+    subject="01",
     session_id="01"
 )
 

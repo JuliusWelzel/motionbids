@@ -16,7 +16,7 @@ Example usage:
     ...     for axis in ["x", "y", "z"]
     ... ]
     >>> motion = MotionData(
-    ...     subject_id="01",
+    ...     subject="01",
     ...     task_name="rest",
     ...     tracksys="optical",
     ...     sampling_frequency=100,

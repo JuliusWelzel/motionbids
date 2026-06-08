@@ -9,14 +9,14 @@ from motionbids import MotionData, Channel
 def test_motion_data_creation_minimal():
     """Test creating MotionData with only required fields."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
         tracksys="optical"
     )
     
-    assert motion.subject_id == "01"
+    assert motion.subject == "01"
     assert motion.task_name == "rest"
     assert motion.sampling_frequency == 100.0
     assert motion.tracked_points_count == 10
@@ -33,7 +33,7 @@ def test_motion_data_creation_full():
     ]
     
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="walk",
         sampling_frequency=120.0,
         tracked_points_count=5,
@@ -64,7 +64,7 @@ def test_motion_data_invalid_sampling_frequency():
     """Test that negative sampling frequency raises error."""
     with pytest.raises(ValueError, match="sampling_frequency must be positive"):
         MotionData(
-            subject_id="01",
+            subject="01",
             task_name="rest",
             sampling_frequency=-100.0,
             tracked_points_count=10,
@@ -76,7 +76,7 @@ def test_motion_data_invalid_tracked_points():
     """Test that negative tracked points count raises error."""
     with pytest.raises(ValueError, match="tracked_points_count must be positive"):
         MotionData(
-            subject_id="01",
+            subject="01",
             task_name="rest",
             sampling_frequency=100.0,
             tracked_points_count=-5,
@@ -88,7 +88,7 @@ def test_motion_data_invalid_run():
     """Test that run < 1 raises error."""
     with pytest.raises(ValueError, match="run must be >= 1"):
         MotionData(
-            subject_id="01",
+            subject="01",
             task_name="rest",
             sampling_frequency=100.0,
             tracked_points_count=10,
@@ -107,7 +107,7 @@ def test_motion_data_columns_mismatch():
     
     with pytest.raises(ValueError, match="Number of channels.*must match"):
         MotionData(
-            subject_id="01",
+            subject="01",
             task_name="rest",
             sampling_frequency=100.0,
             tracked_points_count=10,
@@ -123,7 +123,7 @@ def test_motion_data_columns_mismatch():
 def test_get_bids_filename_minimal():
     """Test BIDS filename generation with minimal fields."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -137,7 +137,7 @@ def test_get_bids_filename_minimal():
 def test_get_bids_filename_full():
     """Test BIDS filename generation with all optional entities."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="walk",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -155,7 +155,7 @@ def test_get_bids_filename_full():
 def test_get_bids_filename_custom_suffix():
     """Test BIDS filename generation with custom suffix and extension."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -169,7 +169,7 @@ def test_get_bids_filename_custom_suffix():
 def test_to_metadata_dict():
     """Test conversion to metadata dictionary."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="walk",
         sampling_frequency=120.0,
         tracked_points_count=5,
@@ -190,7 +190,7 @@ def test_to_metadata_dict():
 def test_to_metadata_dict_with_additional():
     """Test metadata dictionary includes additional metadata."""
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,
@@ -212,7 +212,7 @@ def test_motion_data_with_1d_array():
     ]
     
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="rest",
         sampling_frequency=100.0,
         tracked_points_count=10,

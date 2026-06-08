@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     # built dynamically below and is otherwise opaque to static analysis).
     @dataclass
     class MotionData:
-        subject_id: str
+        subject: str
         task_name: str
         tracksys: str
         sampling_frequency: float
@@ -99,8 +99,8 @@ def _create_motion_data_class():
     # Otherwise Python raises: "non-default argument follows default argument"
     
     # Add required BIDS entities (not from schema metadata)
-    class_fields['subject_id'] = (str, field(metadata={'bids_name': 'sub', 'required': True}))
-    field_docs['subject_id'] = "Subject identifier (BIDS entity 'sub')"
+    class_fields['subject'] = (str, field(metadata={'bids_name': 'sub', 'required': True}))
+    field_docs['subject'] = "Subject identifier (BIDS entity 'sub')"
     
     class_fields['task_name'] = (str, field(metadata={'bids_name': 'TaskName', 'required': True}))
     field_docs['task_name'] = "Name of the task (BIDS metadata 'TaskName')"
@@ -234,7 +234,7 @@ def _create_motion_data_class():
         ...     for i in range(10) for ax in ["x", "y", "z"]
         ... ]
         >>> motion = MotionData(
-        ...     subject_id="01",
+        ...     subject="01",
         ...     task_name="walk",
         ...     tracksys="optical",
         ...     sampling_frequency=120.0,
@@ -319,7 +319,7 @@ def _create_motion_data_class():
                 "Please provide a tracking system label (e.g., 'optical', 'imu', 'video')."
             )
         
-        parts = [f"sub-{self.subject_id}"]
+        parts = [f"sub-{self.subject}"]
         
         if self.session_id:
             parts.append(f"ses-{self.session_id}")
@@ -360,7 +360,7 @@ def _create_motion_data_class():
                 continue
             if fld.metadata.get('motion_data'):
                 continue
-            if fld.name in ['subject_id', 'session_id', 'acquisition', 'run', 'tracksys', 'acq_time', 'additional_metadata']:
+            if fld.name in ['subject', 'session_id', 'acquisition', 'run', 'tracksys', 'acq_time', 'additional_metadata']:
                 continue
             
             # Get BIDS name from metadata
