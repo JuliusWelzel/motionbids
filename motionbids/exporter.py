@@ -358,50 +358,48 @@ def create_bids_directory_structure(
     base_dir: Union[str, Path],
     subject_id: str,
     session_id: Optional[str] = None,
-    use_session_dir: bool = False
 ) -> Path:
     """
     Create BIDS-compliant directory structure for motion data.
-    
+
     Creates:
         base_dir/sub-<subject_id>/[ses-<session_id>/]motion/
-    
+
+    A ``ses-<session_id>`` directory level is created when (and only when) a
+    ``session_id`` is provided. This follows the BIDS rule that the session
+    directory level must be present exactly when the ``ses-`` entity is used in
+    filenames, and absent when it is not — keeping filenames and their on-disk
+    location consistent.
+
     Args:
         base_dir: Base BIDS directory
         subject_id: Subject identifier
-        session_id: Optional session identifier (for filename only)
-        use_session_dir: Whether to create ses-* directory structure (default: False)
-                        Set to True only if you need session-level organization
-    
+        session_id: Optional session identifier. When provided, a
+                    ``ses-<session_id>`` directory level is created.
+
     Returns:
         Path to the motion data directory
-    
-    Note:
-        By default (use_session_dir=False), motion files are stored directly under
-        sub-*/motion/ even when session_id is provided (session info appears in filenames).
-        This follows BIDS convention for single-session studies or when sessions
-        don't require separate directories.
-    
+
     Example:
-        >>> # Default: no session directory (BIDS compliant for most cases)
-        >>> motion_dir = create_bids_directory_structure("bids_root", "01", "01")
+        >>> # No session: motion files live directly under the subject
+        >>> motion_dir = create_bids_directory_structure("bids_root", "01")
         >>> print(motion_dir)
         bids_root/sub-01/motion
-        
-        >>> # Explicit session directories (only if needed)
-        >>> motion_dir = create_bids_directory_structure("bids_root", "01", "01", use_session_dir=True)
+
+        >>> # With a session: a ses-<label> level is created
+        >>> motion_dir = create_bids_directory_structure("bids_root", "01", "01")
         >>> print(motion_dir)
         bids_root/sub-01/ses-01/motion
     """
     base_dir = Path(base_dir)
     subject_dir = base_dir / f"sub-{subject_id}"
-    
-    # Only create session directory if explicitly requested
-    if session_id and use_session_dir:
+
+    # Create a session directory level whenever a session_id is given.
+    if session_id:
         motion_dir = subject_dir / f"ses-{session_id}" / "motion"
     else:
         motion_dir = subject_dir / "motion"
-    
+
     motion_dir.mkdir(parents=True, exist_ok=True)
     return motion_dir
 

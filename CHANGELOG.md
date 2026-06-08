@@ -5,9 +5,12 @@ All notable changes to this project will be documented in this file.
 ## [0.2.2] - 2026-06-04
 
 ### Fixed
-- `create_bids_directory_structure()` now defaults to NOT creating session directories
-  to comply with BIDS validator expectations for motion data
-- Session directories can still be created by setting `use_session_dir=True`
+- `create_bids_directory_structure()` now creates a `ses-<label>` directory level
+  if and only if a `session_id` is provided, matching the BIDS rule that the
+  session directory must be present exactly when the `ses-` entity appears in
+  filenames. This keeps filenames and their on-disk location consistent and fixes
+  BIDS validator `INVALID_LOCATION` errors (replaces the earlier `use_session_dir`
+  flag, which has been removed)
 
 ### Added
 - New example `examples/from_xdf_movella.py` demonstrating batch conversion of

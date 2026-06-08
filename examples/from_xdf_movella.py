@@ -49,11 +49,14 @@ def process_xdf_file(xdf_file: Path, base_dir: str, session_id: str = "01") -> b
     subject_id = xdf_file.stem
     
     # Step 1: Create BIDS directory structure
+    # Passing session_id creates a ses-<label> level; passing None keeps files
+    # directly under the subject. Either way it stays consistent with the
+    # filenames generated below.
     print(f"\n1. Creating BIDS directory structure for sub-{subject_id}")
     motion_dir = create_bids_directory_structure(
         base_dir=base_dir,
         subject_id=subject_id,
-        session_id=None  # Don't create session directories unless needed
+        session_id=session_id
     )
     print(f"   Created: {motion_dir}")
     
@@ -143,7 +146,7 @@ def process_xdf_file(xdf_file: Path, base_dir: str, session_id: str = "01") -> b
     # Create MotionData object
     motion = MotionData(
         subject_id=subject_id,
-        session_id=session_id if session_id else None,  # Session ID in filename only
+        session_id=session_id,  # Drives both the ses-<label> dir and the filename
         task_name="walking",
         tracksys="imu",
         sampling_frequency=sampling_rate,

@@ -282,22 +282,18 @@ def test_export_tsv_1d_data(temp_dir):
     assert data.shape == (100,)
 
 
-def test_create_bids_directory_structure_no_session_dir(temp_dir):
-    """Test creating BIDS directory without session dir even when session_id is provided."""
-    motion_dir = create_bids_directory_structure(
-        temp_dir, "01", session_id="01", use_session_dir=False
-    )
-    
+def test_create_bids_directory_structure_no_session(temp_dir):
+    """Without a session_id, motion files live directly under the subject."""
+    motion_dir = create_bids_directory_structure(temp_dir, "01")
+
     assert motion_dir.exists()
-    assert motion_dir == temp_dir / "sub-01" / "motion"  # No ses-01 directory
+    assert motion_dir == temp_dir / "sub-01" / "motion"  # No ses-* directory
 
 
-def test_create_bids_directory_structure_with_session_dir_explicit(temp_dir):
-    """Test creating BIDS directory with session dir when explicitly requested."""
-    motion_dir = create_bids_directory_structure(
-        temp_dir, "01", session_id="01", use_session_dir=True
-    )
-    
+def test_create_bids_directory_structure_with_session(temp_dir):
+    """When a session_id is given, a ses-<label> directory level is created."""
+    motion_dir = create_bids_directory_structure(temp_dir, "01", session_id="01")
+
     assert motion_dir.exists()
     assert motion_dir == temp_dir / "sub-01" / "ses-01" / "motion"
 
