@@ -34,12 +34,12 @@ jobs:
     
     - name: Run tests
       run: |
-        pytest tests/ -v --cov=motionbids --cov-report=xml --cov-report=term
-    
+        pytest tests/ -v --cov=motionbids --cov-branch --cov-report=xml --cov-report=term
+
     - name: Upload coverage to Codecov
       if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
         fail_ci_if_error: false
         token: ${{ secrets.CODECOV_TOKEN }}
