@@ -250,3 +250,55 @@ def test_validate_bids_compliance():
     )
     
     assert validate_bids_compliance(motion_invalid) is False
+
+
+# --- BIDS entity-label format regression tests --------------------------------
+# A BIDS label must match [0-9a-zA-Z+]+ : ASCII alphanumerics and '+' only.
+# '_' and '-' are reserved separators and are forbidden inside a label.
+
+def _make_motion(**overrides):
+    """Build a minimal otherwise-valid MotionData, applying field overrides."""
+    params = dict(
+        subject="01",
+        task_name="rest",
+        tracksys="imu",
+        sampling_frequency=100.0,
+        tracked_points_count=10,
+    )
+    params.update(overrides)
+    return MotionData(**params)
+
+
+@pytest.mark.parametrize("field, value", [
+    ("subject", "01"),
+    ("subject", "001"),       # leading zeros are allowed (digits)
+    ("subject", "01+02"),     # '+' is permitted by the BIDS label format
+    ("session", "pre"),
+    ("session", "01"),
+    ("task_name", "restEC"),
+    ("acquisition", "highSNR"),
+    ("tracksys", "imu"),
+])
+def test_valid_bids_labels(field, value):
+    """Labels matching [0-9a-zA-Z+]+ are accepted for every label entity."""
+    motion = _make_motion(**{field: value})
+    assert validate_bids_compliance(motion) is True
+
+
+@pytest.mark.parametrize("field, value", [
+    ("subject", "01_A"),      # '_' is the BIDS entity separator
+    ("subject", "01-A"),      # '-' is the BIDS key/value separator
+    ("subject", "café"), # non-ASCII alphanumerics are not allowed
+    ("subject", "01\n"),      # trailing newline must not slip through
+    ("task_name", "rest_2"),
+    ("task_name", "rest task"),  # space
+    ("session", "pre_1"),     # regression: session was previously unvalidated
+    ("session", "a b"),
+    ("acquisition", "hi_res"),   # regression: acq was previously unvalidated
+    ("tracksys", "imu_left"),    # regression: tracksys was previously unvalidated
+])
+def test_invalid_bids_labels(field, value):
+    """Labels with '_', '-', spaces, non-ASCII, or newlines are rejected per entity."""
+    motion = _make_motion(**{field: value})
+    with pytest.raises(ValidationError, match=field):
+        validate_motion_data(motion)

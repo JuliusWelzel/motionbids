@@ -6,6 +6,7 @@ BIDS requirements and recommendations.
 """
 from __future__ import annotations
 
+import re
 import warnings
 from typing import TYPE_CHECKING, List, Set, Tuple
 
@@ -31,6 +32,12 @@ RECOMMENDED_FIELDS = {
     'recording_duration',
     'recording_type',
 }
+
+# BIDS entity-label format. Per the BIDS schema (objects.formats.label) a label
+# must match this pattern: ASCII alphanumerics and the '+' character only.
+# Notably '_' and '-' are reserved as the BIDS entity and key/value separators
+# and are therefore NOT permitted inside a label.
+BIDS_LABEL_PATTERN = re.compile(r'[0-9a-zA-Z+]+')
 
 
 class ValidationError(ValueError):
@@ -139,6 +146,28 @@ def check_recommended_fields(data: MotionData) -> Set[str]:
     return missing
 
 
+def _check_label(value: object, entity_name: str, errors: List[str]) -> None:
+    """
+    Append an error if ``value`` is not a BIDS-compliant entity label.
+
+    A BIDS label must match ``[0-9a-zA-Z+]+`` (ASCII alphanumerics and the
+    ``+`` character). ``_`` and ``-`` are reserved separators and are not
+    permitted inside a label. ``None`` and empty values are skipped here;
+    presence of required entities is enforced by :func:`check_required_fields`.
+
+    Args:
+        value: The label value to check.
+        entity_name: Name of the entity, used in the error message.
+        errors: List that an error message is appended to on failure.
+    """
+    if value and not BIDS_LABEL_PATTERN.fullmatch(value):
+        errors.append(
+            f"{entity_name} label '{value}' is not BIDS-compliant: labels must "
+            f"contain only alphanumeric characters and '+' "
+            f"(no '_', '-', spaces, or non-ASCII characters)"
+        )
+
+
 def validate_field_values(data: MotionData) -> List[str]:
     """
     Validate that field values are within acceptable ranges and formats.
@@ -151,21 +180,14 @@ def validate_field_values(data: MotionData) -> List[str]:
     """
     errors = []
     
-    # Validate subject format (alphanumeric, no special chars except hyphen/underscore)
-    if data.subject:
-        if not all(c.isalnum() or c in '-_' for c in data.subject):
-            errors.append(
-                "subject must contain only alphanumeric characters, "
-                "hyphens, or underscores"
-            )
-    
-    # Validate task_name (no spaces or special characters)
-    if data.task_name:
-        if not all(c.isalnum() or c in '-_' for c in data.task_name):
-            errors.append(
-                "task_name must contain only alphanumeric characters, "
-                "hyphens, or underscores"
-            )
+    # Validate BIDS entity labels (sub-, ses-, task-, acq-, tracksys-).
+    # Each must match the BIDS label format; '_' and '-' are reserved
+    # separators and are not allowed inside a label.
+    _check_label(data.subject, "subject", errors)
+    _check_label(data.session, "session", errors)
+    _check_label(data.task_name, "task_name", errors)
+    _check_label(data.acquisition, "acquisition", errors)
+    _check_label(data.tracksys, "tracksys", errors)
     
     # Validate sampling_frequency
     if data.sampling_frequency is not None:
