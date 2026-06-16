@@ -34,7 +34,9 @@ classifiers = [
 dependencies = [
     "bidsschematools>=0.8.0",
     "dataclasses-json>=0.6.0",
+    "ipykernel>=7.1.0",
     "numpy>=1.20.0",
+    "pip>=26.1.2",
 ]
 
 [project.urls]
@@ -45,16 +47,23 @@ Issues = "https://github.com/JuliusWelzel/motionbids/issues"
 Changelog = "https://github.com/JuliusWelzel/motionbids/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
-dev = [
-    "ipykernel>=6.29.5",
-    "pip>=25.3",
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-]
 docs = [
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.4.0",
     "mkdocstrings[python]>=0.24.0",
+]
+examples = [
+    "ezc3d>=1.7.0",
+    "matplotlib>=3.10.9",
+    "pandas>=2.3.3",
+    "pyxdf>=1.17.5",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
 ]
 
 [build-system]
