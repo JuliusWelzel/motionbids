@@ -133,8 +133,9 @@ your-study/
 ## Importing Data
 
 `motionbids` focuses on **exporting** to BIDS format. Since motion capture systems vary widely,
-importing raw data is left to the user. The [Workflow Guide](workflow.md) includes examples for
-loading data from CSV, C3D, and IMU sensors.
+importing raw data is left to the user. The [Workflow Guide](workflow.md) includes snippets for
+loading data from CSV, C3D, and IMU sensors, and the [Examples](examples.md) page provides two
+complete, runnable conversion scripts (Vicon `.c3d` and Movella `.xdf`).
 
 ## Citation
 

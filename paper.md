@@ -21,9 +21,6 @@ authors:
   - name: Francesca Tampellini
     orcid: 0000-0000-0000-0000 # Replace with your ORCID
     affiliation: 4
-  - name: Robbin Romijnders
-    orcid: 0000-0002-2507-0924
-    affiliation: 1
   - name: Sarah Blum
     orcid: 0000-0000-0000-0000 # Replace with
     affiliation: 2
@@ -55,7 +52,7 @@ The package provides a lightweight, schema-driven interface for converting raw m
 
 # Statement of Need
 
-The recording of body movements is increasingly central to neuroscientific research, particularly in MoBI experiments where participants move freely while their brain activity is recorded using mobile electroencephalography (EEG) or functional near-infrared spectroscopy (fNIRS). In these multimodal setups, precise synchronization and data organization are important for subsequent analysis. However, unlike neuroimaging data, which has benefited from mature standardization protocols, motion data has historically lacked a unified format [@welzel2024unisepunifiedsensorplacement]. This fragmentation has made data sharing and reproducibility difficult, as datasets often rely on proprietary formats or ad-hoc directory structures.
+The recording of body movements is increasingly central to neuroscientific research, particularly in MoBI experiments where participants move freely while their brain activity is recorded using mobile electroencephalography (EEG) or functional near-infrared spectroscopy (fNIRS). In these multimodal setups, precise synchronization and data organization are important for subsequent analysis. However, unlike neuroimaging data, which has benefited from mature standardization protocols, motion data has historically lacked a unified format [@welzel2024unisepunifiedsensorplacement]. While the C3D format is widely used in the biomechanics community, its usage is mostly limited to marker-based motion capture systems. On the other hand, more versatile data formats such as EDF or XDF lack metadata standards appropriate for representing motion data. This fragmentation has made data sharing and reproducibility difficult, as datasets often rely on proprietary formats or ad-hoc directory structures.
 
 The theoretical framework for standardizing this data was recently formalized in the "Motion-BIDS" extension proposal (BEP029), described by @Jeung:2024. While this publication established *how* motion data should be organized, the scientific community still lacks a dedicated, standalone tool to implement this standard practically.
 
@@ -72,7 +69,7 @@ A key feature of the Motion-BIDS extension—and a primary focus of `motionbids`
 The Python ecosystem for neuroimaging data management is robust, with widely cited packages such as `NiBabel` [@Brett:2020] for file I/O, `Nipype` [@Gorgolewski:2011] for pipeline orchestration, and `PyBIDS` [@Yarkoni:2019] for querying BIDS datasets.
 
 However, a gap exists for the specific task of *creating* Motion-BIDS datasets:
-1.  **Lack of Standalone Converters:** Currently, there is no dedicated package in Python or MATLAB solely for converting motion data to BIDS. Existing BIDS conversion tools are embedded within larger, modality-specific suites (e.g., `MNE-BIDS` [@Appelhoff:2019] or `FieldTrip` [@Oostenveld:2011]). While some of these (e.g., FieldTrip's `data2bids`) can write Motion-BIDS compatiblefiles, they require adopting the toolbox's data model and analysis workflow for motion data rather than offering a lightweight, standalone software.
+1.  **Lack of Standalone Converters:** Currently, there is no dedicated package in Python or MATLAB solely for converting motion data to BIDS. Existing BIDS conversion tools are embedded within larger, modality-specific suites (e.g., `MNE-BIDS` [@Appelhoff:2019] or `FieldTrip` [@Oostenveld:2011]). While FieldTrip's `data2bids` can write Motion-BIDS compatible files, robust conversion of motion data constitutes a substantial effort involving domain-specific information, making it impractical to expect maintainers of M/EEG toolboxes to fully support and sustain evolving motion-specific extensions.
 2.  **Complexity of Existing Tools:** General-purpose converters like `HeuDiConv` or `BIDScoin` are primarily optimized for DICOM-to-NIfTI conversion in MRI workflows. Adapting them for motion data often requires significant "hacking" or manual intervention, which increases the risk of error and reduces accessibility for behavioral researchers who may not be familiar with MRI workflows.
 3.  **Schema Compliance:** `motionbids` is explicitly "schema-driven." Unlike ad-hoc scripts, it validates user input against the BIDS schema definitions for motion data, ensuring that required metadata fields (e.g., `SamplingFrequency`, `TrackedPointsCount`) are present and correctly formatted before the data is written to disk.
 
