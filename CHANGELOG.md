@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-06-22
+
+### Changed
+- **Breaking:** stricter BIDS entity-label validation in `validate_motion_data()`.
+  The `subject`, `session`, `task_name`, `acquisition`, and `tracksys` labels
+  must now match the BIDS label format `[0-9a-zA-Z+]+` (ASCII alphanumerics and
+  `+` only). `_`, `-`, spaces, and non-ASCII characters are now rejected, since
+  `_` and `-` are reserved BIDS entity/key-value separators. Previously only
+  `subject` and `task_name` were checked, and `_`/`-` were incorrectly allowed,
+  so inputs that passed validation before may now raise a `ValidationError`.
+- Consolidated the development dependencies into the `dev` optional-dependencies
+  extra so `pip install -e ".[dev]"` works on any pip version (removed the
+  PEP 735 `[dependency-groups]` table).
+
+### Added
+- New example `examples/from_c3d_vicon.py` converting Vicon C3D marker data to
+  BIDS, with a bundled sample recording downloaded on first run.
+- Documentation "Examples" section with per-system walkthrough pages
+  (Vicon C3D and Movella XDF).
+
+### Fixed
+- Updated all README and documentation examples to the `subject`/`session`
+  parameter names introduced in 0.3.0.
+
 ## [0.3.0] - 2026-06-08
 
 ### Changed
