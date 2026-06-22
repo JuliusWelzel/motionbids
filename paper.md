@@ -80,4 +80,8 @@ However, a gap exists for the specific task of *creating* Motion-BIDS datasets:
 
 We acknowledge the foundational work of the whole BIDS community.
 
+# AI Usage Disclosure
+
+Generative AI tools were used during the development of `motionbids` and the preparation of this paper. Specifically, Anthropic's Claude (Claude Opus 4.x models) was used to help draft and refactor example conversion scripts and their documentation, copy-edit and structure portions of this manuscript and cross-check bibliographic entries. The core software design, the data model, and all scientific claims were conceived and decided by the human authors. All AI-assisted output—code, documentation, and text—was reviewed, edited, and validated by the authors, who take full responsibility for the content of the software and this paper.
+
 # References
