@@ -27,7 +27,7 @@ channels = [
 
 motion = MotionData(
     # Required fields
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
@@ -47,7 +47,7 @@ Must be provided for all motion data:
 
 | Field | Type | BIDS Name | Description |
 |-------|------|-----------|-------------|
-| `subject_id` | `str` | `sub` | Subject identifier |
+| `subject` | `str` | `sub` | Subject identifier |
 | `task_name` | `str` | `TaskName` | Task performed (e.g., "walk") |
 | `tracksys` | `str` | `tracksys` | Tracking system (e.g., "optical") |
 | `sampling_frequency` | `float` | `SamplingFrequency` | Sampling rate in Hz |
@@ -72,7 +72,7 @@ For organizing multi-session/run studies:
 
 | Field | Type | BIDS Name | Description |
 |-------|------|-----------|-------------|
-| `session_id` | `str` | `ses` | Session identifier |
+| `session` | `str` | `ses` | Session identifier |
 | `acquisition` | `str` | `acq` | Acquisition label |
 | `run` | `int` | `run` | Run index (1-indexed) |
 | `acq_time` | `str` | - | ISO 8601 timestamp |
@@ -98,8 +98,8 @@ Entity fields appear in the BIDS filename in this order:
 
 ```python
 motion = MotionData(
-    subject_id="01",
-    session_id="01",
+    subject="01",
+    session="01",
     task_name="walk",
     tracksys="optical",
     acquisition="indoor",
@@ -208,8 +208,8 @@ When `acq_time` is provided, a `*_scans.tsv` file is created:
 
 ```python
 motion = MotionData(
-    subject_id="01",
-    session_id="01",
+    subject="01",
+    session="01",
     task_name="walk",
     acq_time="2025-11-05T14:30:00",
     ...
@@ -334,7 +334,7 @@ units = ["mm"] * 30  # 30 units
 ```python
 # ✓ Valid
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
@@ -343,7 +343,7 @@ motion = MotionData(
 
 # ✗ Missing tracksys → ValueError
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     sampling_frequency=120.0,
     tracked_points_count=10
@@ -383,7 +383,7 @@ data = np.random.randn(n_timepoints, n_markers * 3)
 # Create motion object with all field types
 motion = MotionData(
     # Required
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
@@ -398,7 +398,7 @@ motion = MotionData(
     recording_type="continuous",
     
     # Optional entities
-    session_id="01",
+    session="01",
     acquisition="indoor",
     run=1,
     acq_time="2025-11-05T14:30:00",
@@ -415,7 +415,7 @@ motion = MotionData(
 )
 
 # Access fields
-print(motion.subject_id)  # "01"
+print(motion.subject)  # "01"
 print(motion.task_name)   # "walk"
 print(motion.data.shape)  # (1200, 30)
 print(len(motion.channels))  # 30

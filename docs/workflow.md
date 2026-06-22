@@ -62,7 +62,7 @@ channels = [
 ```python
 motion = MotionData(
     # Required fields
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",  # optical, imu, video, etc.
     sampling_frequency=120.0,
@@ -74,7 +74,7 @@ motion = MotionData(
     recording_type="continuous",
     
     # Optional session/run info
-    session_id="01",
+    session="01",
     run=1,
     acquisition="indoor",
     acq_time="2025-11-05T14:30:00",
@@ -126,28 +126,28 @@ export_dataset_description(
     bids_root=bids_root,
     name="Motion Capture Study",
     authors=["Your Name"],
-    dataset_channel_type="raw"
+    dataset_type="raw"
 )
 
 # 3. Process each subject
-for subject_id in ["01", "02", "03"]:
+for subject in ["01", "02", "03"]:
     # Record participant demographics
-    export_participants_tsv(bids_root, participant_id=subject_id, age="25", sex="F")
+    export_participants_tsv(bids_root, participant_id=subject, age="25", sex="F")
 
-    for session_id in ["01", "02"]:
+    for session in ["01", "02"]:
         # Create directory structure
         motion_dir = create_bids_directory_structure(
             base_dir=bids_root,
-            subject_id=subject_id,
-            session_id=session_id
+            subject=subject,
+            session=session
         )
         
         # Create motion data
-        data = load_subject_data(subject_id, session_id)  # Your function
+        data = load_subject_data(subject, session)  # Your function
         
         motion = MotionData(
-            subject_id=subject_id,
-            session_id=session_id,
+            subject=subject,
+            session=session,
             task_name="walk",
             tracksys="optical",
             sampling_frequency=120.0,
@@ -155,7 +155,7 @@ for subject_id in ["01", "02", "03"]:
             manufacturer="Vicon",
             data=data,
             channels=channels,  # List of Channel objects
-            acq_time=get_timestamp(subject_id, session_id)  # Your function
+            acq_time=get_timestamp(subject, session)  # Your function
         )
         
         # Export
@@ -287,7 +287,7 @@ sub-02	30	M	L	patient
 ```python
 for run_num in [1, 2, 3]:
     motion = MotionData(
-        subject_id="01",
+        subject="01",
         task_name="walk",
         tracksys="optical",
         run=run_num,  # Increment run
@@ -322,7 +322,7 @@ channels = [
 ]
 
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
@@ -360,7 +360,7 @@ channels = [
 ]
 
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=freq,
@@ -406,7 +406,7 @@ for sensor in sensors:
         ))
 
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="imu",
     sampling_frequency=100.0,
@@ -420,7 +420,7 @@ motion = MotionData(
 ### Custom Metadata
 ```python
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
@@ -455,7 +455,7 @@ except ValidationError as e:
 ### What Gets Validated
 
 #### Required Fields
-- ✅ Required fields present (`subject_id`, `task_name`, `tracksys`, etc.)
+- ✅ Required fields present (`subject`, `task_name`, `tracksys`, etc.)
 - ✅ Positive numeric values (`sampling_frequency > 0`)
 - ⚠️ Recommended fields present (warnings only)
 
@@ -491,11 +491,11 @@ except ValidationError as e:
 ### "Missing required field: tracksys"
 ```python
 # ✗ Missing tracksys
-motion = MotionData(subject_id="01", task_name="walk", ...)
+motion = MotionData(subject="01", task_name="walk", ...)
 
 # ✓ Include tracksys
 motion = MotionData(
-    subject_id="01", 
+    subject="01", 
     task_name="walk",
     tracksys="optical",  # Required!
     ...

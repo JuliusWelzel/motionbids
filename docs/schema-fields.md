@@ -16,7 +16,7 @@ Entity fields appear in the BIDS filename and organize the dataset hierarchy.
 
 | Field | Python Name | BIDS Label | Description | Example |
 |-------|-------------|------------|-------------|---------|
-| Subject | `subject_id` | `sub` | Subject identifier | `"01"`, `"control01"` |
+| Subject | `subject` | `sub` | Subject identifier | `"01"`, `"control01"` |
 | Task | `task_name` | `task` | Task performed | `"walk"`, `"reach"` |
 | Tracking System | `tracksys` | `tracksys` | Tracking technology | `"optical"`, `"imu"` |
 
@@ -24,7 +24,7 @@ Entity fields appear in the BIDS filename and organize the dataset hierarchy.
 
 | Field | Python Name | BIDS Label | Description | Example |
 |-------|-------------|------------|-------------|---------|
-| Session | `session_id` | `ses` | Session identifier | `"01"`, `"baseline"` |
+| Session | `session` | `ses` | Session identifier | `"01"`, `"baseline"` |
 | Acquisition | `acquisition` | `acq` | Acquisition parameters | `"indoor"`, `"outdoor"` |
 | Run | `run` | `run` | Run index (1-indexed) | `1`, `2`, `3` |
 
@@ -255,7 +255,7 @@ Common units for motion data:
 
 ### Required Field Checks
 ```python
-✓ subject_id must be provided
+✓ subject must be provided
 ✓ task_name must be provided
 ✓ tracksys must be provided
 ✓ sampling_frequency must be provided and > 0
@@ -288,7 +288,7 @@ import numpy as np
 motion = MotionData(
     # === REQUIRED ===
     # Entity fields
-    subject_id="01",              # sub-01
+    subject="01",              # sub-01
     task_name="walk",             # task-walk
     tracksys="optical",           # tracksys-optical
     
@@ -306,7 +306,7 @@ motion = MotionData(
     
     # === OPTIONAL ===
     # Entity fields
-    session_id="01",              # ses-01
+    session="01",              # ses-01
     acquisition="indoor",         # acq-indoor
     run=1,                        # run-01
     

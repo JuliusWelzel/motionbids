@@ -32,7 +32,7 @@ channels = [
 
 # Create BIDS motion object
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
@@ -95,7 +95,7 @@ pip install -e ".[dev]"
 
 ```python
 motion = MotionData(
-    subject_id="01",              # Subject identifier
+    subject="01",              # Subject identifier
     task_name="walk",             # Task name
     tracksys="optical",           # Tracking system (optical/imu/video)
     sampling_frequency=120.0,     # Sampling rate in Hz
@@ -148,8 +148,8 @@ from motionbids import (
 # 1. Create directory structure
 motion_dir = create_bids_directory_structure(
     base_dir="my_study",
-    subject_id="01",
-    session_id="01"
+    subject="01",
+    session="01"
 )
 
 # 2. Create dataset description
@@ -201,7 +201,7 @@ channels = [
 ]
 
 motion = MotionData(
-    subject_id="01", task_name="walk", tracksys="optical",
+    subject="01", task_name="walk", tracksys="optical",
     sampling_frequency=120.0, tracked_points_count=10,
     data=data, channels=channels
 )
@@ -235,7 +235,7 @@ channels = [
 ]
 
 motion = MotionData(
-    subject_id="01", task_name="walk", tracksys="optical",
+    subject="01", task_name="walk", tracksys="optical",
     sampling_frequency=freq, tracked_points_count=len(labels),
     data=data, channels=channels
 )

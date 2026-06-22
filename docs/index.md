@@ -26,7 +26,7 @@ channels = [
 
 # Create BIDS motion object
 motion = MotionData(
-    subject_id="01",
+    subject="01",
     task_name="walk",
     tracksys="optical",
     sampling_frequency=120.0,
