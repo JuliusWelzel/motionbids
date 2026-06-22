@@ -19,14 +19,13 @@ authors:
     orcid: 0009-0000-1568-7149
     affiliation: 4
   - name: Francesca Tampellini
-    orcid: 0000-0000-0000-0000 # Replace with your ORCID
-    affiliation: 4
+    affiliation: 5
   - name: Sarah Blum
-    orcid: 0000-0000-0000-0000 # Replace with
+    orcid: 0000-0002-7129-8962 
     affiliation: 2
   - name: Martin Geiger
-    orcid: 0000-0000-0000-0000 # Replace with your ORCID
-    affiliation: 5
+    orcid: 0009-0004-1890-9973
+    affiliation: 6
     
 affiliations:
  - name: University of Kiel, Department of Neurology, Kiel, Germany
@@ -36,9 +35,11 @@ affiliations:
  - name: Technische Universität Berlin, Berlin, Germany
    index: 3
  - name: Department of Electrical, Electronic, and Information Engineering "Guglielmo Marconi", University of Bologna, Bologna, Italy
-   index: 4 
- - name: Institute for Visualization and Interactive    Systems, University of Stuttgart, Stuttgart, Germany
+   index: 4
+ - name: IRCCS Istituto delle Scienze Neurologiche di Bologna, Bologna, Italy
    index: 5
+ - name: Institute for Visualization and Interactive Systems, University of Stuttgart, Stuttgart, Germany
+   index: 6
 
 date: 02 June 2026
 bibliography: paper.bib
@@ -70,7 +71,7 @@ The Python ecosystem for neuroimaging data management is robust, with widely cit
 
 However, a gap exists for the specific task of *creating* Motion-BIDS datasets:
 1.  **Lack of Standalone Converters:** Currently, there is no dedicated package in Python or MATLAB solely for converting motion data to BIDS. Existing BIDS conversion tools are embedded within larger, modality-specific suites (e.g., `MNE-BIDS` [@Appelhoff:2019] or `FieldTrip` [@Oostenveld:2011]). While FieldTrip's `data2bids` can write Motion-BIDS compatible files, robust conversion of motion data constitutes a substantial effort involving domain-specific information, making it impractical to expect maintainers of M/EEG toolboxes to fully support and sustain evolving motion-specific extensions.
-2.  **Complexity of Existing Tools:** General-purpose converters like `HeuDiConv` or `BIDScoin` are primarily optimized for DICOM-to-NIfTI conversion in MRI workflows. Adapting them for motion data often requires significant "hacking" or manual intervention, which increases the risk of error and reduces accessibility for behavioral researchers who may not be familiar with MRI workflows.
+2.  **Complexity of Existing Tools:** General-purpose converters like `HeuDiConv` [@halchenko_heudiconv_2024] are primarily optimized for DICOM-to-NIfTI conversion in MRI workflows. Adapting them for motion data often requires significant "hacking" or manual intervention, which increases the risk of error and reduces accessibility for behavioral researchers who may not be familiar with MRI workflows.
 3.  **Schema Compliance:** `motionbids` is explicitly "schema-driven." Unlike ad-hoc scripts, it validates user input against the BIDS schema definitions for motion data, ensuring that required metadata fields (e.g., `SamplingFrequency`, `TrackedPointsCount`) are present and correctly formatted before the data is written to disk.
 
 
