@@ -254,6 +254,12 @@ pip install -e ".[dev]"
 pytest --cov=motionbids
 ```
 
+## Contributing
+
+Contributions, bug reports, and questions are welcome! See
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to report issues, get support, and
+submit changes.
+
 ## Citation
 
 ```bibtex
