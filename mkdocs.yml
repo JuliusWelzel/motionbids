@@ -64,6 +64,9 @@ nav:
   - Home: index.md
   - Motivation: motivation.md
   - Workflow: workflow.md
-  - Examples: examples.md
+  - Examples:
+    - Overview: examples/index.md
+    - Vicon (C3D): examples/vicon-c3d.md
+    - Movella DOT (XDF): examples/movella-xdf.md
   - Class Reference: class-reference.md
   - Schema Fields: schema-fields.md
