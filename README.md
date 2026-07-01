@@ -8,6 +8,68 @@
 
 A **lightweight** Python package for exporting motion capture data to **BIDS format**.
 
+## How it works
+
+You shape your recording into a NumPy array plus a list of `Channel` objects, then build a
+`MotionData` instance — whose class is generated at runtime from the live BIDS schema, so it stays
+in sync with the specification — and validate and export it. The result is a ready-to-check BIDS
+motion dataset.
+
+```mermaid
+flowchart LR
+  subgraph inputs["Your data (import is your job)"]
+    direction TB
+    RAW["Raw mocap: optical / IMU / video<br/>(C3D / XDF / CSV)"]
+    ARR["NumPy array<br/>(rows = time, cols = channels)"]
+    CHDEF["List of Channel objects"]
+    RAW -->|"you import &amp; shape"| ARR
+    RAW --> CHDEF
+  end
+
+  subgraph pkg["motionbids core"]
+    direction TB
+    CH["Channel<br/>validates component &amp; type<br/>against BIDS values"]
+    MD["MotionData (dataclass)<br/>construct-time validation (__post_init__)"]
+    VAL["validate_motion_data()<br/>convenience checks"]
+    EXP["export_bids_motion()<br/>writes JSON, TSV files"]
+    SCHEMA["BIDS schema (bidsschematools)"]
+
+    SCHEMA -.->|"generates the class"| MD
+    CH --> MD
+    MD --> VAL --> EXP
+  end
+
+  subgraph out["BIDS motion dataset (output)"]
+    direction TB
+    JSON["*_motion.json (sidecar)"]
+    TSV["*_motion.tsv (time series)"]
+    CHT["*_channels.tsv (descriptions)"]
+    SCN["*_scans.tsv (synchronization)"]
+    TREE["sub-&lt;id&gt;/[ses-&lt;id&gt;/]motion/<br/>dataset_description.json, participants.tsv"]
+  end
+
+  ARR --> MD
+  CHDEF --> CH
+  EXP --> JSON
+  EXP --> TSV
+  EXP --> CHT
+  EXP --> SCN
+  EXP --> TREE
+
+  classDef inp fill:#e8eef7,stroke:#3b5b8c,color:#1a2a44
+  classDef core fill:#eaf3ea,stroke:#3c6e47,color:#1e3a24
+  classDef eng fill:#fbf1e0,stroke:#b5761f,color:#5a3a0a
+  classDef outp fill:#f3eaf3,stroke:#7a3c74,color:#3a1e37
+  class RAW,ARR,CHDEF inp
+  class CH,MD,VAL,EXP core
+  class SCHEMA eng
+  class JSON,TSV,CHT,SCN,TREE outp
+```
+
+> **Import is your job, export is ours.** `motionbids` deliberately leaves reading vendor formats
+> (C3D, XDF, CSV, …) to you and focuses on producing a spec-compliant BIDS dataset. Always confirm
+> the result with the official [BIDS Validator](https://bids-standard.github.io/bids-validator/).
+
 ## Quick Start
 
 ```python
